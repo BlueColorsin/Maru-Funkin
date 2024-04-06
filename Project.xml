@@ -29,6 +29,10 @@
 	<!--Mobile-specific-->
 	<window if="mobile" orientation="landscape" fullscreen="true" resizable="false" vsync="false"/>
 
+	<!--Architecture Settings-->
+
+	<architecture exclude="armv7" if="android" />
+
 	<!-- ______________________________ Funkin Settings _____________________________ -->
 	
 	<!--If to have mod folders allowed to load on the game-->
