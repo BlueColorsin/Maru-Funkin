@@ -17,12 +17,9 @@ function createPost() {
 
 function startSong() {
     State.camZooming = false;
-    State.notesGroup.inBotplay = true;
-    Conductor.songPosition = 29320;
 }
 
 function stepHit(curStep:Int) {
-    //State.notesGroup.inBotplay = getPref("botplay");
     switch(curStep) {
         case 302: {
             State.defaultCamZoom = 0.75;
