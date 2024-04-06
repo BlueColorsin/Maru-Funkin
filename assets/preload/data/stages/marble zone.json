@@ -1,0 +1,18 @@
+{
+	"library": "",
+	"zoom": 0.85,
+	"dadOffsets": [0, 0],
+	"bfOffsets": [-175, -375],
+	"startCamOffsets": [-800,-1625],
+	"layers": {
+		"bg": [
+			{
+				"tag": "background",
+				"imagePath": "stage/background",
+				"position": [-750, -1975],
+				"scrolls": [1, 1],
+				"scale": 1
+			}
+		]
+	}
+}

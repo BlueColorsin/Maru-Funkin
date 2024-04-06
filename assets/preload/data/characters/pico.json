@@ -1,86 +1,54 @@
 {
-	"imagePath": "week3/Pico_FNF_assetss",
-	"camOffsets": [-150,75],
+	"imagePath": "pico",
+	"camOffsets": [270,335],
 	"icon": "pico",
 	"isGF": false,
 	"scale": 1,
-	"charOffsets": [40,60],
+	"charOffsets": [290,540],
 	"anims": [
 		{
-			"offsets": [-47,-83],
-			"indices": [],
-			"loop": false,
-			"framerate": 24,
-			"animFile": "Pico Down Note0",
-			"animName": "singDOWN"
-		},
-		{
-			"offsets": [-72,26],
-			"indices": [],
-			"loop": false,
-			"framerate": 24,
-			"animFile": "Pico NOTE LEFT miss0",
-			"animName": "singRIGHTmiss"
-		},
-		{
-			"offsets": [-26,22],
-			"indices": [],
-			"loop": false,
-			"framerate": 24,
-			"animFile": "pico Up note0",
-			"animName": "singUP"
-		},
-		{
-			"offsets": [61,47],
-			"indices": [],
-			"loop": false,
-			"framerate": 24,
-			"animFile": "Pico Note Right Miss0",
-			"animName": "singLEFTmiss"
-		},
-		{
 			"offsets": [0,0],
-			"indices": [],
+			"indices": [14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13],
 			"loop": false,
 			"framerate": 24,
-			"animFile": "Pico Idle Dance",
+			"animFile": "idle",
 			"animName": "idle"
 		},
 		{
-			"offsets": [-47,-42],
+			"offsets": [3,-1],
 			"indices": [],
 			"loop": false,
 			"framerate": 24,
-			"animFile": "Pico Down Note MISS0",
-			"animName": "singDOWNmiss"
-		},
-		{
-			"offsets": [-81,-11],
-			"indices": [],
-			"loop": false,
-			"framerate": 24,
-			"animFile": "Pico NOTE LEFT0",
+			"animFile": "singRIGHT",
 			"animName": "singRIGHT"
 		},
 		{
-			"offsets": [56,1],
+			"offsets": [198,-232],
 			"indices": [],
 			"loop": false,
 			"framerate": 24,
-			"animFile": "Pico Note Right0",
+			"animFile": "singDOWN",
+			"animName": "singDOWN"
+		},
+		{
+			"offsets": [130,-20],
+			"indices": [],
+			"loop": false,
+			"framerate": 24,
+			"animFile": "singLEFT",
 			"animName": "singLEFT"
 		},
 		{
-			"offsets": [-20,58],
+			"offsets": [20,190],
 			"indices": [],
 			"loop": false,
 			"framerate": 24,
-			"animFile": "pico Up note miss0",
-			"animName": "singUPmiss"
+			"animFile": "singUP",
+			"animName": "singUP"
 		}
 	],
 	"flipX": true,
-	"isPlayer": false,
+	"isPlayer": true,
 	"antialiasing": true,
 	"gameOverChar": "bf-dead",
 	"gameOverSuffix": ""

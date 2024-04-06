@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TextureAtlas imagePath="dx2p.png">
+<SubTexture name="dx2p idle-loop0000" x="1662" y="1407" width="465" height="589" frameX="-169" frameY="-33" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p idle-loop0001" x="567" y="2045" width="467" height="589" frameX="-166" frameY="-32" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p idle-loop0002" x="1034" y="2045" width="471" height="589" frameX="-163" frameY="-32" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p idle-loop0003" x="1969" y="2045" width="473" height="588" frameX="-161" frameY="-32" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p idle-loop0004" x="1674" y="640" width="460" height="590" frameX="-171" frameY="-31" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p idle0000" x="2791" y="1743" width="476" height="573" frameX="-166" frameY="-48" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p idle0001" x="2791" y="1165" width="477" height="578" frameX="-163" frameY="-43" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p idle0002" x="2791" y="584" width="477" height="581" frameX="-162" frameY="-40" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p idle0003" x="2791" y="0" width="480" height="584" frameX="-158" frameY="-36" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p idle0004" x="1505" y="2045" width="464" height="588" frameX="-169" frameY="-33" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singLEFT0000" x="0" y="2045" width="567" height="625" frameX="-24" frameY="-32" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singLEFT0001" x="2223" y="0" width="568" height="630" frameX="-36" frameY="-28" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singLEFT-loop0000" x="1108" y="1407" width="554" height="631" frameX="-41" frameY="-27" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singLEFT-loop0001" x="2223" y="630" width="556" height="630" frameX="-39" frameY="-27" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singLEFT-loop0002" x="2223" y="1260" width="555" height="628" frameX="-39" frameY="-27" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singDOWN0000" x="1890" y="2670" width="475" height="520" frameX="-154" frameY="-116" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singDOWN0001" x="0" y="2670" width="480" height="529" frameX="-142" frameY="-107" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singDOWN-loop0000" x="480" y="2670" width="466" height="528" frameX="-150" frameY="-108" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singDOWN-loop0001" x="946" y="2670" width="466" height="527" frameX="-150" frameY="-108" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singDOWN-loop0002" x="1412" y="2670" width="478" height="525" frameX="-145" frameY="-110" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singRIGHT0000" x="415" y="708" width="576" height="647" frameX="-140" frameY="-35" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singRIGHT0001" x="991" y="708" width="548" height="642" frameX="-143" frameY="-38" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singRIGHT-loop0000" x="1674" y="0" width="549" height="640" frameX="-146" frameY="-40" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singRIGHT-loop0001" x="0" y="1407" width="551" height="638" frameX="-145" frameY="-41" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singRIGHT-loop0002" x="551" y="1407" width="557" height="638" frameX="-140" frameY="-40" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singUP0000" x="0" y="0" width="412" height="708" frameX="-133" frameY="-6" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singUP0001" x="0" y="708" width="415" height="699" frameX="-136" frameY="-14" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singUP-loop0000" x="412" y="0" width="425" height="702" frameX="-129" frameY="-12" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singUP-loop0001" x="837" y="0" width="424" height="700" frameX="-128" frameY="-13" frameWidth="720" frameHeight="720" />
+<SubTexture name="dx2p singUP-loop0002" x="1261" y="0" width="413" height="700" frameX="-140" frameY="-13" frameWidth="720" frameHeight="720" />
+</TextureAtlas>

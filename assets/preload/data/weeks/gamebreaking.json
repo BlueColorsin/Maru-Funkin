@@ -1,0 +1,13 @@
+{
+    "songList": 
+    {
+        "songs":["Gamebreaker"],
+        "songIcon": ["dx"],
+        "songColors": ["0xFFFFFFFF"]
+    },
+    "weekImage": "gamebreaker",
+    "weekName": "Gamebreaker",
+    "weekColor": "0xFFFFFFFF",
+    "storyCharacters": ["", "", ""],
+    "weekDiffs": ["hard"]
+}

@@ -1,0 +1,63 @@
+{
+	"imagePath": "dx",
+	"camOffsets": [-130,70],
+	"icon": "dxp1",
+	"isGF": false,
+	"scale": 1,
+	"charOffsets": [30,160],
+	"anims": [
+		{
+			"offsets": [0,0],
+			"indices": [],
+			"loop": true,
+			"framerate": 24,
+			"animFile": "idle",
+			"animName": "idle"
+		},
+		{
+			"offsets": [-43,8],
+			"indices": [6,7,8,9,10,11,12],
+			"loop": true,
+			"framerate": 24,
+			"animFile": "singRIGHT",
+			"animName": "singRIGHT-loop"
+		},
+		{
+			"offsets": [-43,8],
+			"indices": [],
+			"loop": false,
+			"framerate": 24,
+			"animFile": "singRIGHT",
+			"animName": "singRIGHT"
+		},
+		{
+			"offsets": [-70,-16],
+			"indices": [],
+			"loop": false,
+			"framerate": 24,
+			"animFile": "singDOWN",
+			"animName": "singDOWN"
+		},
+		{
+			"offsets": [22,-1],
+			"indices": [],
+			"loop": false,
+			"framerate": 24,
+			"animFile": "singLEFT",
+			"animName": "singLEFT"
+		},
+		{
+			"offsets": [6,19],
+			"indices": [],
+			"loop": false,
+			"framerate": 24,
+			"animFile": "singUP",
+			"animName": "singUP"
+		}
+	],
+	"flipX": false,
+	"isPlayer": false,
+	"antialiasing": true,
+	"gameOverChar": "bf-dead",
+	"gameOverSuffix": ""
+}
