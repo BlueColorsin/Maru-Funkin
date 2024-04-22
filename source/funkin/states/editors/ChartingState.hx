@@ -1,6 +1,5 @@
 package funkin.states.editors;
 
-import haxe.ds.Vector;
 import flixel.util.FlxArrayUtil;
 import funkin.states.editors.chart.ChartStrumLine;
 import funkin.substates.NotesSubstate;
@@ -42,7 +41,7 @@ class ChartingState extends MusicBeatState {
     public var instStr:String = "";
 
     public function loadMusic(value:String) {
-        Conductor.loadSong(value);
+        Conductor.loadMusic(value);
         instStr = FlxStringUtil.formatTime(Conductor.inst.length * 0.001, true);
     }
     
@@ -76,7 +75,7 @@ class ChartingState extends MusicBeatState {
         Conductor.setTimeSignature(4,4);
         loadMusic(SONG.song);
         Conductor.mapBPMChanges(SONG);
-		Conductor.offset = Vector.fromArrayCopy(SONG.offsets);
+		Conductor.songOffset = SONG.offsets;
         Conductor.volume = 1;
         stop();
 
@@ -604,6 +603,11 @@ class ChartingState extends MusicBeatState {
         mouse();
     }
 
+    override function stepHit(curStep:Int) {
+        super.stepHit(curStep);
+        if (playing) Conductor.autoSync();
+    }
+
     public static inline function getTimeY(strumTime:Float):Float {
 		return FlxMath.remapToRange(strumTime, 0, Conductor.STEPS_PER_MEASURE * Conductor.stepCrochet, 0, GRID_SIZE * Conductor.STEPS_PER_MEASURE);
 	}
@@ -716,13 +720,13 @@ class ChartingState extends MusicBeatState {
 
 				case 'song_inst_offset':
 					final tempOffset:Int = Std.int(nums.value);
-					Conductor.offset[0] = tempOffset;
+					Conductor.songOffset[0] = tempOffset;
 					SONG.offsets[0] = tempOffset;
                     mainGrid.updateWaveform();
 
 				case 'song_vocals_offset':
 					final tempOffset:Int = Std.int(nums.value);
-					Conductor.offset[1] = tempOffset;
+					Conductor.songOffset[1] = tempOffset;
 					SONG.offsets[1] = tempOffset;
                     mainGrid.updateWaveform();
 

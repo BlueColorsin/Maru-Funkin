@@ -18,7 +18,7 @@ class MainMenuState extends MusicBeatState {
 	override function create():Void
 	{
 		// Updating Discord Rich Presence
-		#if discord_rpc DiscordClient.changePresence("In the Menus", null); #end
+		#if DISCORD_ALLOWED DiscordClient.changePresence("In the Menus", null); #end
 		#if mobile MobileTouch.setMode(NONE); #end
 
 		if (FlxG.sound.music == null || !FlxG.sound.music.playing)
@@ -59,7 +59,10 @@ class MainMenuState extends MusicBeatState {
 			menuItem.ID = i;
 		}
 
-		FlxG.camera.follow(camFollow, null, 0.06);
+		var menuCam:FlxCamera = new FlxCamera();
+		FlxG.cameras.add(menuCam);
+		FlxG.cameras.setDefaultDrawTarget(menuCam, true);
+		menuCam.follow(camFollow, null, 0.06);
 
 		var versionText:String = 'Mau Engin v${Main.engineVersion}\nFriday Night Funkin v${Application.current.meta.get('version')}';
 
@@ -108,7 +111,7 @@ class MainMenuState extends MusicBeatState {
 			}
 			#end
 
-			#if (DEV_TOOLS && sys)
+			#if DEV_TOOLS
 			if (FlxG.keys.justPressed.SEVEN) {
 				selectedSomethin = true;
 				switchState(new funkin.states.editors.ModSetupState());

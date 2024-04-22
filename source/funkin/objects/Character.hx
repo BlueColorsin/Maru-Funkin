@@ -12,8 +12,7 @@ typedef CharacterJson = {
 	var isGF:Bool;
 } & SpriteJson;
 
-class Character extends FlxSpriteExt
-{
+class Character extends FlxSpriteExt {
 	public static final DEFAULT_CHARACTER:CharacterJson = {
 		anims: [],
 		imagePath: "week1/BOYFRIEND",
@@ -242,9 +241,8 @@ class Character extends FlxSpriteExt
 	public var _singHoldTimer:Float = 0;
 	public var holdFrame:Int = 2;
 
-	public function sing(noteData:Int = 0, altAnim:String = '', hit:Bool = true):Void
-	{
-		final singAnim:String = 'sing${CoolUtil.directionArray[noteData % Conductor.NOTE_DATA_LENGTH]}$altAnim';
+	public function sing(noteData:Int = 0, altAnim:String = '', hit:Bool = true):Void {
+		final singAnim = 'sing${CoolUtil.directionArray[noteData%Conductor.NOTE_DATA_LENGTH]}$altAnim';
 		if (!existsOffsets(singAnim)) return;
 		
 		holdTimer = 0;
@@ -261,7 +259,7 @@ class Character extends FlxSpriteExt
 		}
 	}
 
-	var heyTimer:FlxTimer;
+	var heyTimer:FlxTimer = null;
 
 	public function hey():Void {
 		final heyAnim = isGF ? 'cheer' : 'hey';
@@ -269,16 +267,15 @@ class Character extends FlxSpriteExt
 
 		playAnim(heyAnim, true);
 		specialAnim = true;
+		if (heyTimer != null)
+			heyTimer.cancel();
 
-		(heyTimer == null) ? heyTimer = new FlxTimer() : heyTimer.cancel();
-		heyTimer.start(Conductor.crochetMills, (tmr:FlxTimer) -> {
+		heyTimer = new FlxTimer().start(Conductor.crochetMills, function(tmr:FlxTimer) {
 			specialAnim = false;
-			if (animation.curAnim != null)
-			{
-				var name = animation.curAnim.name;
-				if (name == 'hey' || name == 'cheer')
-					restartDance();
-			}
+			final curAnim = animation.curAnim;
+			if (curAnim == null) return;
+			if (curAnim.name == 'hey' || curAnim.name == 'cheer')
+				restartDance();
 		});
 	}
 
@@ -293,27 +290,21 @@ class Character extends FlxSpriteExt
 	public var danced:Bool = false;
 	public var curDanceBeat:Int = 0;
 
-	public function inIdle():Bool
-	{
-		if (animation.curAnim == null)
-			return false;
-
-		var name = animation.curAnim.name;
-		return name.startsWith("dance") || name.startsWith("idle");
+	public function inIdle() {
+		final curAnim = animation.curAnim;
+		if (curAnim == null) return false;
+		return curAnim.name.startsWith('dance') || curAnim.name.startsWith('idle');
 	}
 
-	public function dance():Void {
+	public function dance() {
 		if (!debugMode) if (forceDance) if (!specialAnim)
 			getDanceAnim();
 	}
 
-	public function danceInBeat():Void
-	{
-		if (animation.curAnim == null)
-			return;
-
-		if (!animation.curAnim.name.startsWith("sing"))
-		{
+	public function danceInBeat() {
+		final curAnim = animation.curAnim;
+		if (curAnim == null) return;
+		if (!animation.curAnim.name.startsWith("sing")) {
 			curDanceBeat--;
 			if (curDanceBeat < 0) {
 				curDanceBeat = danceBeat;
@@ -326,7 +317,7 @@ class Character extends FlxSpriteExt
 	public inline function danceCheck() // Backwards compatibility lol
 		danceInBeat();
 
-	function isDoubleDancer():Bool {
+	function isDoubleDancer() {
 		for(i in animOffsets.keys()) {
 			if (i.startsWith("danceRight"))
 				return true;

@@ -1,6 +1,5 @@
 package funkin.sound;
 
-import openfl.display.Graphics;
 import openfl.display.Sprite;
 import openfl.media.Sound;
 import haxe.io.Bytes;
@@ -10,7 +9,6 @@ import haxe.io.Bytes;
 class AudioWaveform extends FlxSpriteExt
 {
     var canvas:Sprite;
-    var graphics:Graphics;
     var bounds:Rectangle;
 
     public function new(X:Float = 0.0, Y:Float = 0.0, Width:Float = 250.0, Height:Float = 500.0, ?sound:Sound):Void
@@ -20,7 +18,6 @@ class AudioWaveform extends FlxSpriteExt
         
         bounds = new Rectangle(0, 0, width, height);
         canvas = new Sprite();
-        graphics = canvas.graphics;
 
         if (sound != null)
             setSound(sound);
@@ -34,13 +31,12 @@ class AudioWaveform extends FlxSpriteExt
     static inline var QUALITY:Int = 250;
 
     var sampleRate:Float = 0.0;
-    var avgBytes:Array<Int> = [];
+    var avgBytes:Array<Int>;
 
     override function destroy():Void {
         super.destroy();
         avgBytes = null;
         canvas = null;
-        graphics = null;
         bounds = null;
     }
 
@@ -48,7 +44,7 @@ class AudioWaveform extends FlxSpriteExt
     {
         sampleRate = sound.__buffer.sampleRate / QUALITY;
         var bytes:Bytes = sound.__buffer.data.toBytes();
-        avgBytes.splice(0, avgBytes.length);
+        avgBytes = new Array<Int>();
 
         var i:Int = 0;
         var l:Int = bytes.length;
@@ -64,7 +60,7 @@ class AudioWaveform extends FlxSpriteExt
                 bigByte = byte;
 
             if (i % QUALITY == 0) {
-                avgBytes.push(Std.int((bigByte / 65535) * 50));
+                avgBytes.push(bigByte);
                 bigByte = 0;
             }
 
@@ -86,18 +82,17 @@ class AudioWaveform extends FlxSpriteExt
 
     public function redrawWaveform():Void
     {
-        graphics.__bounds = bounds;
+        canvas.graphics.__bounds = bounds;
 
-        if (!visible || avgBytes.length <= 0 || end <= 0) {
+        if (!visible || avgBytes == null || avgBytes.length <= 0 || end <= 0) {
             return;
         }
 
-        final w:Int = Std.int(width * .5);
-        final h:Int = Std.int(height);
+        final mid = width * .5;
         
-        graphics.beginFill();
-        graphics.lineStyle(0.7, -1, 1.0);
-        graphics.moveTo(w, 0);
+        canvas.graphics.beginFill();
+        canvas.graphics.lineStyle(0.7, FlxColor.WHITE);
+        canvas.graphics.moveTo(mid, 0);
 
         var i:Int = start;
         var l:Int = FlxMath.minInt(end, avgBytes.length);
@@ -105,23 +100,27 @@ class AudioWaveform extends FlxSpriteExt
 
         while (i < l)
         {
-            final byte:Int = avgBytes.unsafeGet(i);
+            var byte:Int = avgBytes.unsafeGet(i);
 
             if (byte != lastByte)
             {
                 lastByte = byte;
+                final y =  FlxMath.remapToRange((i - start), 0, (l - start), 0, height);
 
-                final y:Float = inline FlxMath.remapToRange((i - start), 0, (l - start), 0, h);
-                lineTo(w + byte, y);
-                //lineTo(w, y);
+                lineTo(
+                    mid + ((byte / 65535) * 50),
+                    y
+                );
+
+                lineTo(mid, y);
             }
 
-            i = (i + 1);
+            i++;
         }
 
-        lineTo(w, h);
-        graphics.endFill();
-        graphics.__dirty = true;
+        lineTo(mid, height);
+        canvas.graphics.endFill();
+        canvas.graphics.__dirty = true;
 
         // Draw the waveform onto the sprite
         pixels.fillRect(bounds, 16777216);
@@ -132,7 +131,7 @@ class AudioWaveform extends FlxSpriteExt
     }
 
     inline function clearGraphics() {
-        graphics.clear();
+        canvas.graphics.clear();
     }
 
     override function set_visible(value:Bool) {
@@ -143,8 +142,8 @@ class AudioWaveform extends FlxSpriteExt
     }
 
     inline function lineTo(x:Float, y:Float):Void {
-        graphics.__positionX = x;
-		graphics.__positionY = y;
-        graphics.__commands.lineTo(x, y);
+        canvas.graphics.__positionX = x;
+		canvas.graphics.__positionY = y;
+        canvas.graphics.__commands.lineTo(x, y);
     }
 }

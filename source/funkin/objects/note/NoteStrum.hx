@@ -22,10 +22,9 @@ class NoteStrum extends FlxSpriteExt implements INoteData {
 	public var curSkin:String = '';
 
 	public var controlFunction:InputType->Bool;
-	public var strumActive:Bool = true;
 	
 	public function getControl(inputType:InputType = PRESSED):Bool {
-		if (strumActive) if (controlFunction != null)
+		if (controlFunction != null)
 			return controlFunction(inputType);
 		
 		return false;

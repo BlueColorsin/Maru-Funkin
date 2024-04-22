@@ -45,11 +45,11 @@
             "version": null
         },
         {
-            "name": "hxvlc",
-            "type": "git", 
-            "version": null,
+            "name": "hxCodec",
+            "type": "git",
+            "dir": null,
             "ref": "main",
-            "url": "https://github.com/MaybeMaru/hxvlc"
+            "url": "https://github.com/MaybeMaru/hxCodec"
         },
         {
             "name": "maru-hscript",

@@ -1,7 +1,6 @@
 package funkin.substates;
 
-class CharSelectSubstate extends MusicBeatSubstate
-{
+class CharSelectSubstate extends MusicBeatSubstate {
     public static var lastChar:String = 'bf';
     var selectFunction:Void->Void = null;
 
@@ -20,8 +19,9 @@ class CharSelectSubstate extends MusicBeatSubstate
 		bg.scrollFactor.set();
 		add(bg);
 
-        folderTxt = new Alphabet(0, 10);
+        folderTxt = new Alphabet(FlxG.width - 10, 10);
         folderTxt.scrollFactor.set();
+        folderTxt.alignment = RIGHT;
         folderTxt.color = FlxColor.YELLOW;
 
         var vanillaSort = CoolUtil.getFileContent(Paths.txt("characters/characters-sort", null, false)).split(",");
@@ -35,10 +35,11 @@ class CharSelectSubstate extends MusicBeatSubstate
         for (f in 0...listsToAdd.length) {
             for (i in 0...listsToAdd[f].length) {
                 var list = listsToAdd[f];
-                var charText:MenuAlphabet = new MenuAlphabet(5, (70 * i) + 30, list[i], true, i);
+                var charText:MenuAlphabet = new MenuAlphabet(5, (70 * i) + 30, list[i], true);
                 charText.scrollFactor.set();
+                charText.targetY = i;
                 charText.forceX = false;
-                charText.snapPosition();
+                charText.setTargetPos();
                 add(charText);
                     
                 var iconName:String = Character.getCharData(list[i]).icon;
@@ -82,8 +83,6 @@ class CharSelectSubstate extends MusicBeatSubstate
             case 0: folderTxt.text = 'Base game';
             case 1: folderTxt.text = 'Mods';
         }
-
-        folderTxt.x = FlxG.width - folderTxt.width - 10;
     
         for (f in 0...charArray.length) {
             var showBool:Bool = (f == curFolder);

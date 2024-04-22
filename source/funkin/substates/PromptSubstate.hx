@@ -17,10 +17,8 @@ class PromptSubstate extends MusicBeatSubstate {
         prompBox.screenCenter();
         add(prompBox);
 
-        var prompText:Alphabet = new Alphabet(0, prompBox.y + 75, text);
-        prompText.scale.scale(textScale, textScale);
+        var prompText:Alphabet = new Alphabet(FlxG.width * 0.5 ,prompBox.y + 75, text, true, 0, textScale);
         prompText.alignment = CENTER;
-        prompText.screenCenter(X);
         add(prompText);
 
         camera = CoolUtil.getTopCam();

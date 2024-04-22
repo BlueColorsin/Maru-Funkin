@@ -63,12 +63,12 @@ class PrefItem extends FlxSpriteGroup {
         return array.indexOf(prefValue);
     }
 
-    function applyAntiGroup(members:Array<Dynamic>, anti:Bool = true) {
-        for (i in members) {
+    function applyAntiGroup(_members:Array<Dynamic>, anti:Bool = true) {
+        for (i in _members) {
             switch(Type.typeof(i)) {
-                case TClass(FunkinSprite):
+                case TClass(FunkinSprite) | TClass(AlphabetCharacter):
                     i.antialiasing = anti;
-                case TClass(FlxTypedGroup) | TClass(PrefItem):
+                case TClass(FlxTypedGroup) | TClass(PrefItem) | TClass(Alphabet):
                     applyAntiGroup(i.members ?? i.group.members, anti);
                 default:
             } 

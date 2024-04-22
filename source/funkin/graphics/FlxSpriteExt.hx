@@ -29,8 +29,8 @@ typedef SpriteJson = {
 /*
     Just FlxSprite but with helper functions
 */
-class FlxSpriteExt extends FlxSkewedSprite
-{
+class FlxSpriteExt extends FlxSkewedSprite {
+
 	public static final DEFAULT_SPRITE:SpriteJson = {
 		anims: [],
 		imagePath: "keoiki",
@@ -135,10 +135,12 @@ class FlxSpriteExt extends FlxSkewedSprite
 		__superUpdate(elapsed);
 	}
 
-	public var _dynamic:Dynamic = {}; // Had to stop overriding flixel sooner or later
+	// public var _dynamic:Dynamic = {}; // Gonna have to stop overriding flixel sometime soon
 
 	@:noCompletion
-	private inline function __superUpdate(elapsed:Float):Void {		
+	private inline function __superUpdate(elapsed:Float):Void {
+		#if FLX_DEBUG FlxBasic.activeCount++; #end
+		
 		if (moves)
 			updateMotion(elapsed);
 		
@@ -147,10 +149,6 @@ class FlxSpriteExt extends FlxSkewedSprite
 
 		if (_dynamic.update != null)
 			Reflect.callMethod(null, _dynamic.update, [elapsed]);
-
-		#if FLX_DEBUG
-		FlxBasic.activeCount++;
-		#end
 	}
 
     public override function draw():Void {
@@ -176,20 +174,18 @@ class FlxSpriteExt extends FlxSkewedSprite
 		
 		checkEmptyFrame();
 		if (_frame.type == EMPTY) return;
+		
+		if (dirty)
+			calcFrame(useFramePixels);  // rarely
 
 		cameras.fastForEach((camera, i) -> {
 			if (camera.visible) if (camera.exists) if (isOnScreen(camera)) {
 				drawComplex(camera);
-				#if FLX_DEBUG
-				FlxBasic.visibleCount++;
-				#end
+				#if FLX_DEBUG FlxBasic.visibleCount++; #end
 			}
 		});
 
-		#if FLX_DEBUG
-		if (FlxG.debugger.drawDebug)
-			drawDebug();
-		#end
+		#if FLX_DEBUG if (FlxG.debugger.drawDebug) drawDebug(); #end
 	}
 
 	@:noCompletion
@@ -323,36 +319,39 @@ class FlxSpriteExt extends FlxSkewedSprite
 
 	@:noCompletion
 	private inline function __superDrawComplex(camera:FlxCamera):Void {
-		__prepareDraw(camera);
+		__prepareDraw();
 		camera.drawPixels(_frame, framePixels, _matrix, colorTransform, blend, antialiasing, shader);
 	}
 
 	@:noCompletion
-	private inline function __prepareDraw(camera:FlxCamera):Void
-	{	
-		prepareFrameMatrix(_frame, _matrix);
-
-		_matrix.tx = (_matrix.tx - origin.x);
-		_matrix.ty = (_matrix.ty - origin.y);
+	private inline function __prepareDraw():Void
+	{
+		final mat:FlxMatrix = _matrix;
 		
-		CoolUtil.matrixScale(_matrix, scale.x, scale.y);
+		prepareFrameMatrix(_frame, mat);
+
+		mat.tx = (mat.tx - origin.x);
+		mat.ty = (mat.ty - origin.y);
+		
+		CoolUtil.matrixScale(mat, scale.x, scale.y);
 
 		if (angle != 0) {
 			__updateTrig();
-			_matrix.rotateWithTrig(_cosAngle, _sinAngle);
+			mat.rotateWithTrig(_cosAngle, _sinAngle);
 		}
 
 		if (skew.x != 0 || skew.y != 0) {
 			_skewMatrix.identity();
 			_skewMatrix.b = Math.tan(skew.y * CoolUtil.TO_RADS);
 			_skewMatrix.c = Math.tan(skew.x * CoolUtil.TO_RADS);
-			_matrix.concat(_skewMatrix);
+			mat.concat(_skewMatrix);
 		}
 
-		final point = _point;
-		getScreenPosition(point, camera);
-		_matrix.tx = (_matrix.tx + point.x + origin.x - offset.x);
-		_matrix.ty = (_matrix.ty + point.y + origin.y - offset.y);
+		getScreenPosition(_point, camera).subtractPoint(offset);
+		_point.add(origin.x, origin.y);
+
+		mat.tx = (mat.tx + _point.x);
+		mat.ty = (mat.ty + _point.y);
 	}
 
     public override function getScreenBounds(?rect:FlxRect, ?cam:FlxCamera):FlxRect {
@@ -402,36 +401,22 @@ class FlxSpriteExt extends FlxSkewedSprite
 	@:noCompletion
 	static final __scaleDiff:FlxPoint = FlxPoint.get();
 	inline public function getScaleDiff():FlxPoint {
-		var jsonScale:Float = spriteJson.scale;
-		return __scaleDiff.set(scale.x / jsonScale, scale.y / jsonScale);
+		return __scaleDiff.set(scale.x / spriteJson.scale, scale.y / spriteJson.scale);
 	}
 
 	public var scaleOffset:Bool = false;
 
-	public function applyCurOffset(forced:Bool = false):Void
-	{
-		if (animation.curAnim != null)
-		{
-			if(existsOffsets(animation.curAnim.name))
-			{
-				var animPoint = animOffsets.get(animation.curAnim.name);
+	public function applyCurOffset(forced:Bool = false):Void {
+		if (animation.curAnim != null) {
+			if(existsOffsets(animation.curAnim.name)) {
 				var point = CoolUtil.point;
-				point.x = animPoint.x;
-				point.y = animPoint.y;
-				
+				point.copyFrom(animOffsets.get(animation.curAnim.name));
 				if (!point.isZero() || forced) {
 					
 					if (flippedOffsets) point.x = -point.x; // Flip X
+					if (scaleOffset)	point.scalePoint(getScaleDiff()); // Scale offset
 					
-					if (scaleOffset) // Scale offset
-					{
-						var diff = getScaleDiff();
-						point.x = point.x * diff.x;
-						point.y = point.y * diff.y;
-					}
-					
-					if (angle != 0) // Angled offset
-					{
+					if (angle != 0) { // Angled offset
 						offset.set(
 							(point.x * _cosAngle) + (point.y * -_sinAngle),
 							(point.x * _sinAngle) + (point.y * _cosAngle)

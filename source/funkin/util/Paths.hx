@@ -11,14 +11,13 @@ import sys.FileSystem;
 
 class Paths
 {
-	inline public static var SOUND_EXT = "ogg";
+	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
 	public static var currentLevel(default, set):String = "";
 
 	public static function set_currentLevel(value:String)
 		return currentLevel = value.toLowerCase();
 
-	public static function getPath(file:String, type:AssetType, ?library:String, allMods:Bool = false, mods:Bool = true, ?level:String):String
-	{
+	public static function getPath(file:String, type:AssetType, ?library:String, allMods:Bool = false, mods:Bool = true, ?level:String):String {
 		final hasLevel = currentLevel.length > 0;
 		
 		#if MODS_ALLOWED
@@ -60,16 +59,12 @@ class Paths
 		}
 		#end
 
-		if (library != null)
-		{
-			if (level != null)
-			{
+		if (library != null) {
+			if (level != null) {
 				final levelPath = getLibraryPathForce(file, library, level);
 				if (exists(levelPath, type))
 					return levelPath;
-			}
-			else
-			{
+			} else {
 				final libraryPath = getLibraryPath(file, library);
 				if (exists(libraryPath, type))
 					return libraryPath;
@@ -96,10 +91,7 @@ class Paths
 
 	inline static function getLibraryPathForce(file:String, library:String, ?level:String, root:String = "assets"):String
 	{
-		if (level != null)
-			return '$root/$library/$level/$file';
-
-		return '$root/$library/$file';
+		return (level != null) ? '$library:$root/$library/$level/$file' : '$library:$root/$library/$file';
 	}
 
 	inline static public function getModPath(file:String):String
@@ -232,10 +224,14 @@ class Paths
 
 	inline static public function exists(file:String, type:AssetType):Bool {
 		#if desktop
-		return FileSystem.exists(file);
+		return FileSystem.exists(removeAssetLib(file));
 		#else
 		return OpenFlAssets.exists(file, type);
 		#end
+	}
+
+	inline static public function removeAssetLib(path:String):String {
+		return #if desktop path.contains(':') ? path.split(':')[1] : #end path;
 	}
 
 	//	Returns [file Mod, file Name]
@@ -244,129 +240,106 @@ class Paths
 		return [dirParts[1], dirParts[dirParts.length-1].split('.')[0]];
 	}
 
-	// Gotta do this to make sure FlxAtlasFrames doesnt lose his shit when the graphic is smaller than the data
-	@:noCompletion
-	public static function getFrames(image:LodGraphic, getter:()->FlxAtlasFrames) {
-		image.setSize(image.lodWidth, image.lodHeight);
-		var frames = getter();
-		image.setSize(image.bitmap.width, image.bitmap.height);
-		return frames;
-	}
-
-	inline static public function getSparrowAtlas(key:String, ?library:String, ?useTexture:Bool, ?lodLevel:LodLevel):FlxAtlasFrames
-	{
+	inline static public function getSparrowAtlas(key:String, ?library:String, ?useTexture:Bool, ?lodLevel:LodLevel):FlxAtlasFrames {
 		var image = image(key, library, false, useTexture, lodLevel);
 		var xml = CoolUtil.getFileContent(file('images/$key.xml', library));
-
-		return __checkLodFrames(getFrames(image, () -> return FlxAtlasFrames.fromSparrow(image, xml)));
+		
+		return __checkLodFrames(FlxAtlasFrames.fromSparrow(image, xml));
 	}
 
-	inline static public function getSpriteSheetAtlas(key:String, ?library:String, ?useTexture:Bool, ?lodLevel:LodLevel):FlxAtlasFrames
-	{
+	inline static public function getSpriteSheetAtlas(key:String, ?library:String, ?useTexture:Bool, ?lodLevel:LodLevel):FlxAtlasFrames {
 		var image = image(key, library, false, useTexture, lodLevel);
 		var txt = CoolUtil.getFileContent(file('images/$key.txt', library));
 
-		return __checkLodFrames(getFrames(image, () -> return FlxAtlasFrames.fromSpriteSheetPacker(image, txt)));
+		return __checkLodFrames(FlxAtlasFrames.fromSpriteSheetPacker(image, txt));
 	}
 
 	inline static public function getAsepriteAtlas(key:String, ?library:String, ?useTexture:Bool, ?lodLevel:LodLevel):FlxAtlasFrames {
 		var image = image(key, library, false, useTexture, lodLevel);
 		var json = CoolUtil.getFileContent(file('images/$key.json', library));
 		
-		return __checkLodFrames(getFrames(image, () -> return JsonUtil.getAsepritePacker(image, json)));
+		return __checkLodFrames(JsonUtil.getAsepritePacker(image, json));
 	}
 
+	//inline static public function getAnimateAtlas(key:String, ?library:String):FlxAtlasFrames {
+	//	return null;
+	//}
+
 	@:noCompletion
-	inline public static function __checkLodFrames(frames:FlxAtlasFrames):FlxAtlasFrames {
+	inline private static function __checkLodFrames(frames:FlxAtlasFrames):FlxAtlasFrames {
 		var parent:LodGraphic = cast(frames.parent, LodGraphic);
 		if (parent.lodLevel == 0 || parent.parsedChildren)
 			return frames;
 
 		var lodScale = parent.lodScale;
-		frames.frames.fastForEach((frame, i) -> {
+		for (frame in frames.frames) {
 			var rect = frame.frame;
-			rect.x = rect.x / lodScale;
-			rect.y = rect.y / lodScale;
-			rect.width = rect.width / lodScale;
-			rect.height = rect.height / lodScale;
-			
+			rect.x /= lodScale;
+            rect.y /= lodScale;
+            rect.width /= lodScale;
+            rect.height /= lodScale;
+
 			var offset = frame.offset;
 			offset.x /= lodScale;
 			offset.y /= lodScale;
-		});
+		}
 
 		parent.parsedChildren = true;
 
 		return frames;
 	}
 
-	static public function getFileList(type:AssetType = IMAGE, fullPath:Bool = true, extension:String = "", folder:String = ""):Array<String>
+	static public function getFileList(type:AssetType = IMAGE, fullPath:Bool = true, ?extension:String, ?folder:String):Array<String>
 	{
-		if (folder.length > 0) if (!folder.endsWith("/"))
-			folder = '$folder/';
-
-		var list:Array<String> = [];
+		var fileList:Array<String> = [];
 		OpenFlAssets.list(type).fastForEach((file, i) ->
 		{
 			if (file.startsWith('assets/'))
 			{
-				if (extension.length == 0 || file.endsWith(extension))
+				if (extension == null || file.endsWith(extension))
 				{
-					if (folder.length == 0 || file.contains(folder))
-					{
-						list.push(fullPath ? file
-							: file.split('/')[file.split('/').length-1].split('.')[0]
-						);
-					}
+					if (folder == null || file.contains(folder))
+						fileList.push(fullPath ? file : file.split('/')[file.split('/').length-1].split('.')[0]);
 				}
 			}
 		});
 
-		list.sort(CoolUtil.sortAlphabetically);
-		return list;
+		fileList.sort(CoolUtil.sortAlphabetically);
+		return fileList;
 	}
 
-	public static function getModFileList(folder:String, ?extension:String, fullPath:Bool = true, global:Bool = true, curFolder:Bool = true, allFolders:Bool = false):Array<String> {
+	static public function getModFileList(folder:String, ?extension:String, fullPath:Bool = true, global:Bool = true, curFolder:Bool = true, allFolders:Bool = false):Array<String> {
 		#if MODS_ALLOWED
 		var fileList:Array<String> = [];
-		var pushFile = (folder:String) ->
-		{
-			if (FileSystem.exists(folder))
-			{
-				var sort:Array<String> = CoolUtil.getFileContent('$folder/listSort.txt').split(",");
-				sort.fastForEach((file, i) -> {
-					var prefix = fullPath ? '$folder/' : '';
-					var suffix = ((extension == null) || !fullPath) ? "" : '.$extension';
-					sort.unsafeSet(i, prefix + file + suffix);
-				});
+		var pushFile = function(folderPath:String) {
+			if (FileSystem.exists(folderPath)) {
+				var fileSort = CoolUtil.getFileContent('$folderPath/listSort.txt').split(",");
+				for (i in 0...fileSort.length) {
+					var sortPrefix = fullPath ? '$folderPath/' : '';
+					var sortSuffix = extension == null || !fullPath ? "" : '.$extension';
+					fileSort[i] = '$sortPrefix${fileSort[i]}$sortSuffix';
+				}
 
-				var folderList:Array<String> = [];
-				FileSystem.readDirectory(folder).fastForEach((path, i) -> {
-					if (extension == null || path.endsWith(extension))
-					{
-						var path = fullPath ? '$folder/$path' : Path.withoutExtension(path);
-						folderList.push(path);
-					}
-				});
+				var curFolderList = [];
+				var dirRead = FileSystem.readDirectory(folderPath);
+				dirRead.sort(CoolUtil.sortAlphabetically);
+				for (i in dirRead) {
+					if (i.endsWith(extension) || extension == null)
+						curFolderList.push(fullPath ? '$folderPath/$i' : Path.withoutExtension(i));
+				}
 
-				var sortedList = CoolUtil.customSort(folderList, sort);
-				sortedList.fastForEach((file, i) -> fileList.push(file));
+				fileList = fileList.concat(CoolUtil.customSort(curFolderList, fileSort));
 			}
 		};
-
-		if (global)
-			pushFile(getModPath(folder));
-
-		if (curFolder)
-			pushFile(getModPath(ModdingUtil.curModFolder + '/$folder'));
-
+		if (global) pushFile(getModPath(folder));
+		if (curFolder) pushFile(getModPath('${ModdingUtil.curModFolder}/$folder'));
 		if (allFolders) {
-			for (mod => active in ModdingUtil.activeMods) {
-				if (active)
-					pushFile(getModPath('$mod/$folder'));
+			for (i in ModdingUtil.activeMods.keys()) {
+				if (ModdingUtil.activeMods.get(i))
+					pushFile(getModPath('$i/$folder'));
 			}
 		}
-
+		
 		return fileList;
 		#else
 		return [];

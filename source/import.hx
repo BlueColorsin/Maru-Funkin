@@ -22,9 +22,14 @@ import funkin.util.CoolUtil;
 import funkin.util.SkinUtil;
 import funkin.util.frontend.Shader;
 import funkin.util.backend.DiscordClient;
-#if (desktop && sys)
+#if desktop
+#if VIDEOS_ALLOWED
+import hxcodec.flixel.FlxVideo;
+#end
+#if sys
 import sys.io.File;
 import sys.FileSystem;
+#end
 #end
 import funkin.util.modding.FunkScript;
 import funkin.util.modding.ModdingUtil;
@@ -56,6 +61,7 @@ import funkin.objects.HealthIcon;
 
 //Alphabet
 import funkin.objects.alphabet.Alphabet;
+import funkin.objects.alphabet.AlphabetCharacter;
 import funkin.objects.alphabet.MenuAlphabet;
 import funkin.objects.alphabet.TypedAlphabet;
 
@@ -128,5 +134,6 @@ import flixel.util.FlxArrayUtil;
 import haxe.Json;
 
 using StringTools;
-using macros.FastArray;
+using macros.UnsafeArray;
+using macros.FastIterate;
 #end

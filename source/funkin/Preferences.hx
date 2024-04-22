@@ -39,9 +39,7 @@ class Preferences {
         /****/addHeader("UI");/****/
 
         #if !mobile
-        #if !web
         addPref('framerate',      'framerate',       60);
-        #end
         addPref('fps-counter',    'fps counter',     true);
         #end
         addPref('vanilla-ui',     'vanilla ui',      false);
@@ -55,8 +53,8 @@ class Preferences {
         addPref('resolution', 'resolution', {array:resolutions, value:default_resolution});
         #end
         addPref('antialiasing', 'antialiasing', true);
-        addPref('quality', 'quality', {array:["rudy", "low", "medium", "high"], value:"high"});
-        #if !(hl || web)
+        addPref('quality', 'quality', {array:["high", "medium", "low", "rudy"], value:"high"});
+        #if !hl
         addPref('gpu-textures', 'gpu textures', true);
         #end
         #if desktop
@@ -95,7 +93,7 @@ class Preferences {
     }
 
     public static inline function updateFramerate():Void
-        FlxG.drawFramerate = FlxG.updateFramerate = #if (mobile || web) 60; #else getPref('framerate'); #end
+        FlxG.drawFramerate = FlxG.updateFramerate = #if mobile 60; #else getPref('framerate'); #end
 
     public static inline function updateFpsCounter():Void
         #if !mobile Main.fpsCounter.visible = getPref('fps-counter'); #else {} #end
@@ -104,7 +102,7 @@ class Preferences {
         #if desktop Main.resizeGame(getPref('resolution')); #else {} #end
 
     public static inline function updateGpuTextures():Void
-        #if !(hl || web) AssetManager.gpuTextures = getPref('gpu-textures'); #else {} #end
+        #if !hl AssetManager.gpuTextures = getPref('gpu-textures'); #else {} #end
 
     public static function effectPrefs():Void {
         updateFramerate();

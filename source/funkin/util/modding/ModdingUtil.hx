@@ -19,8 +19,7 @@ typedef ModFolder = {
  * 0 => Beta 2
  */
 
-class ModdingUtil
-{
+class ModdingUtil {
     public static var folderExceptions(default, never):Array<String> = ['data', 'fonts', 'images', 'music', 'songs', 'videos', 'sounds'];
     public static inline var API_VERSION:Int = 0;
     public static final DEFAULT_MOD:ModFolder = {
@@ -55,37 +54,35 @@ class ModdingUtil
     public static var scripts:Array<FunkScript> = [];
     public static var scriptsMap:Map<String, FunkScript> = [];
 
-    public static function clearScripts():Void
+    inline public static function clearScripts():Void
     {
         FunkScript.globalVariables.clear();
-        #if DEV_TOOLS
-        if (Main.console != null)
-            Main.console.clear();
+        #if !mobile
+        Main.console.clear();
         #end
         
         scripts.copy().fastForEach((script, i) -> removeScript(script));
-        scripts.clear();
+        scripts.splice(0, scripts.length);
 
         // Warn if the mod folder is outdated
-        if (curModData != null) if (curModData.apiVersion != API_VERSION)
+        if (curModData != null && curModData.apiVersion != API_VERSION) {
             warningPrint('$curModFolder / Uses API version ${curModData.apiVersion} (Cur $API_VERSION)');
+        }
     }
 
     public static function reloadMods():Void {
-        modsList.clear();
-        globalMods.clear();
+        FlxArrayUtil.clearArray(modsList);
+        FlxArrayUtil.clearArray(globalMods);
         modsMap.clear();
         
         activeMods = SaveData.getSave('activeMods');
-        
         modsList = getModsList();
-        modsList.fastForEach((mod, i) -> {
-            modsMap.set(mod.folder, mod);
-            if (mod.global) if (activeMods.get(mod.folder))
-                globalMods.push(mod);
-        });
-
+        for (i in modsList) {
+            modsMap.set(i.folder, i);
+            if (i.global && activeMods.get(i.folder)) globalMods.push(i);
+        }
         getDefaultMod();
+
         SaveData.flushData();
     }
 
@@ -210,10 +207,10 @@ class ModdingUtil
     inline public static function errorPrint(txt:String)    print(txt, ERROR);
     inline public static function warningPrint(txt:String)  print(txt, WARNING);
     inline public static function print(text:String, type:PrintType):Void {
-        #if DEV_TOOLS
-        Main.console.print(text, type);
-        #else
+        #if mobile
         trace("[" + type + "] " + text);
+        #else
+        Main.console.print(text, type);
         #end
     }
 
@@ -255,7 +252,15 @@ class ModdingUtil
 
     public static function getScriptList(folder:String = 'data/scripts/global', assets:Bool = true, globalMod:Bool = true, curMod:Bool = true, allMods:Bool = false):Array<String>
     {
-        var scripts = assets ? Paths.getFileList(TEXT, true, 'hx', 'assets/$folder') : [];
+        final scripts = assets ? Paths.getFileList(TEXT, true, 'hx', 'assets/$folder') : [];
+
+        #if !desktop
+        var library = folder.split("/")[0];
+        switch (library) {
+            case "images" | "data" | "sounds" | "fonts":
+            case _: scripts.fastForEach((script, i) -> scripts.unsafeSet(i, library + ":" + script));
+        }
+        #end
 
         #if MODS_ALLOWED
         var modScripts = Paths.getModFileList(folder, 'hx', true, globalMod, curMod, allMods);

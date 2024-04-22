@@ -212,8 +212,8 @@ class ChartNoteGrid extends ChartGridBase
 
     public function updateWaveform():Void
     {
-        instWaveform.audioOffset = Conductor.offset[0];
-        voicesWaveform.audioOffset = Conductor.offset[1];
+        instWaveform.audioOffset = Conductor.songOffset.unsafeGet(0);
+        voicesWaveform.audioOffset = Conductor.songOffset.unsafeGet(1);
 
         var index = ChartingState.instance.sectionIndex;
         var start = ChartingState.getSecTime(index);
@@ -286,6 +286,7 @@ class ChartSustain extends Sustain {
         }
 
         repeatHeight = FlxMath.remapToRange(chartData[2], 0, Conductor.stepCrochet, 0, GRID_SIZE) + GRID_SIZE * .5;
+        clipRect.height = repeatHeight;
     }
 }
 

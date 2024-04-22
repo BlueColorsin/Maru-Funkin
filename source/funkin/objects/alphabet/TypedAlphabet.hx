@@ -1,94 +1,90 @@
 package funkin.objects.alphabet;
 
-class TypedAlphabet extends Alphabet
-{
+class TypedAlphabet extends Alphabet {
     public var sounds:Array<String> = [];
     public var volume:Float = 1;
     public var paused:Bool = true;
     public var delay:Float = 0.05;
-    public var finishCallback:()->Void;
+    public var finishCallback:Void->Void = null;
 
     private var targetText:String = "";
-    private var splitWords:Array<String>;
+    private var splitWords:Array<String> = [];
     private var curWordNum:Int = 0;
     private var erasing:Bool = false;
-    
-    var tmr:FlxTimer;
 
-    public function new(x:Float = 0, y:Float = 0, text:String = "", bold:Bool = true, fieldWidth:Int):Void {
-        super(x, y, "", bold);
-        tmr = new FlxTimer();
-
-        autoSize = false;
-        wrap = WORD(NEVER);
-        this.fieldWidth = Std.int(fieldWidth / alphabetFont.lodScale);
-
+    public function new(x:Float, y:Float, text:String = "coolswag", bold:Bool = true, textWidth:Int = 1000, textScale:Float = 1):Void {
+        super(x,y,"",bold,textWidth,textScale);
         resetText(text);
     }
 
-    // Changes the target text
-    public inline function resetText(newText:String):Void {
+    public inline function resetText(newText:String):Void { //Changes the target text
         targetText = newText;
-        splitWords = newText.split("");
+        splitWords = splitText(newText);
+        cacheLetters();
         curWordNum = 0;
-        text = "";
+        text = '';
     }
 
-    // Writes text from left to right
-    public function start(delay:Float = 0.05):Void {
+    public inline function cacheLetters():Void {
+        while (splitWords.length > letterArray.length) {
+            final cacheChar:AlphabetCharacter = this.recycle(AlphabetCharacter);
+            letterArray.push(cacheChar);
+            add(cacheChar);
+            cacheChar.kill();
+        }
+    }
+
+    public function start(delay:Float = 0.05):Void { //Writes text from left to right
         this.delay = delay;
         paused = false;
         erasing = false;
 
-        tmr.start(delay, (tmr) -> {
+        new FlxTimer().start(delay, function(leTimer:FlxTimer) {
             if (curWordNum < splitWords.length && !paused) {
                 playRandomSound();
                 text = '$text${splitWords[curWordNum]}';
                 curWordNum++;
-                tmr.reset(delay);
+                leTimer.reset(delay);
             }
             else {
                 paused = true;
-                curWordNum = splitWords.length - 1;
-                tmr.cancel();
+                curWordNum = letterArray.length-1;
+                leTimer.cancel();
                 callCheck();
             }
         });
     }
 
-    // Removes text from right to left
-    public function erase():Void {
+    public function erase():Void { //Removes text from right to left
         paused = false;
         erasing = true;
         
-        tmr.start(delay, (tmr) -> {
+        new FlxTimer().start(delay, function(leTimer:FlxTimer) {
             if (curWordNum > 0 && !paused) {
                 playRandomSound();
                 text = text.substring(0,text.length-1);
                 curWordNum--;
-                tmr.reset(delay);
+                leTimer.reset(delay);
             }
             else {
                 paused = true;
-                curWordNum = splitWords.length - 1;
-                tmr.cancel();
+                curWordNum = letterArray.length-1;
+                leTimer.cancel();
                 callCheck();
             }
         });
     }
 
-    // Plays the sound from array
-    public inline function playRandomSound():Void {
+    public inline function playRandomSound():Void { //Plays the sound from array
         if (sounds.length > 0) {
-            CoolUtil.playSound(sounds[FlxG.random.int(0, sounds.length - 1)], volume);
+            CoolUtil.playSound(sounds[FlxG.random.int(0, sounds.length-1)], volume);
         }
     }
 
-    // Skips the start() or erase()
-    public inline function skip():Void {
+    public inline function skip():Void { //Skips the start() or erase()
         text = (erasing ? "" : targetText);
         paused = true;
-        curWordNum = (erasing ? 0 : splitWords.length - 1);
+        curWordNum = (erasing ? 0 : letterArray.length-1);
     }
 
     private inline function callCheck():Void {

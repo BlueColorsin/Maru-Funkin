@@ -28,11 +28,10 @@ class ModItem extends FlxSpriteGroup {
         modIcon.setPosition(15, modBox.height * 0.5 - modIcon.height * 0.5);
         add(modIcon);
 
-        var modTitle:Alphabet = new Alphabet(modIcon.x + modIcon.width + 10, 10, mod.title, true);
-        modTitle.scale.scale(0.666, 0.666); // Satan entered the chat
+        final modTitle:Alphabet = new Alphabet(modIcon.x + modIcon.width + 10, 10, mod.title, true, modBox.width * 0.5, 0.666);
         add(modTitle);
 
-        var modDesc:FlxFunkText = new FlxFunkText(modTitle.x, modTitle.y + modTitle.height + 5, mod.description, FlxPoint.weak(modBox.width*0.6, modBox.height), 20);
+        final modDesc:FlxFunkText = new FlxFunkText(modTitle.x, modTitle.y + modTitle.height + 5, mod.description, FlxPoint.weak(modBox.width*0.6, modBox.height), 20);
         modDesc.font = "phantommuff_";
         modDesc.style = SHADOW(FlxPoint.weak(-2, -2), FlxColor.BLACK);
         modDesc.wordWrap = true;
@@ -41,13 +40,9 @@ class ModItem extends FlxSpriteGroup {
         enableButton = new FlxSpriteExt(modBox.width,modBox.height).loadImageTiled('options/modButton', 60, 58);
         enableButton.animation.add('on', [0]);
         enableButton.animation.add('off', [1]);
-        add(enableButton);
-        
-        enableButton.width *= enableButton.lodScale;
-        enableButton.height *= enableButton.lodScale;
-        
         enableButton.x -= enableButton.width + 5;
         enableButton.y -= enableButton.height + 5;
+        add(enableButton);
 
         enabled = ModdingUtil.activeMods.get(mod.folder);
         updateUI();

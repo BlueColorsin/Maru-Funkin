@@ -10,7 +10,7 @@ class LoadingState extends MusicBeatState
 
     public function init(stage:StageJson, characters:Array<String>, song:String)
     {
-        #if desktop
+        #if !mobile
         var addedAssets:Array<String> = []; // Prevent repeating assets
 
         stageAssets = Stage.getStageAssets(stage);
@@ -40,10 +40,6 @@ class LoadingState extends MusicBeatState
         songAssets.push(inst);
         if (Paths.exists(voices, MUSIC))
             songAssets.push(voices);
-        #else
-        #if web
-        //TODO: may need to make a custom loading screen for web
-        #end
         #end
     }
 
@@ -51,7 +47,7 @@ class LoadingState extends MusicBeatState
 
     public function start()
     {
-        #if desktop
+        #if !mobile
         var start = openfl.Lib.getTimer();
 
         if (onStart != null)
@@ -62,7 +58,7 @@ class LoadingState extends MusicBeatState
             charImages: charAssets,
             songSounds: songAssets
         },
-        () -> {
+        function () {
             trace("finished loading!", (openfl.Lib.getTimer() - start) / 1000);
 
             if (onComplete != null)

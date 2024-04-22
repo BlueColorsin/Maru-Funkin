@@ -7,8 +7,7 @@ interface INoteData {
     public var noteData:Int;
 }
 
-class BasicNote extends SmartSprite implements INoteData
-{
+class BasicNote extends SmartSprite implements INoteData {
     public var strumTime:Float = 0.0;
     public var noteData:Int = 0;
     public var mustPress:Bool = false;

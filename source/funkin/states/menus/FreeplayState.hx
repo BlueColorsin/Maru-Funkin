@@ -10,8 +10,7 @@ typedef SongMetaData = {
 	var mod:String;
 }
 
-class FreeplayState extends MusicBeatState
-{
+class FreeplayState extends MusicBeatState {
 	var bg:FunkinSprite;
 
 	var songs:Array<SongMetaData> = [];
@@ -40,7 +39,7 @@ class FreeplayState extends MusicBeatState
 		FlxG.mouse.visible = #if mobile false; #else true; #end
 		#if mobile MobileTouch.setMode(MENU); #end
 
-		#if discord_rpc // Updating Discord Rich Presence
+		#if DISCORD_ALLOWED // Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
@@ -75,19 +74,21 @@ class FreeplayState extends MusicBeatState
 		add(grpSongs);
 
 		songs.fastForEach((song, i) -> {
-			var icon:HealthIcon;
+			var icon:HealthIcon = null;
 			ModdingUtil.runFunctionMod(song.mod, () -> icon = new HealthIcon(song.char));
 
-			var text:MenuAlphabet = new MenuAlphabet(0, (70 * i) + 30, song.song, true, i);
-			grpSongs.add(text);
+			final _width = Alphabet.spaceWidth * song.song.length;
+			final _icoWidth = icon.width * 1.1 + 10;		
+			final _scale:Float = _icoWidth + _width > FlxG.width ? (FlxG.width - _icoWidth) / _width : 1;
 
-			var w = text.width + icon.width + 50;
-			if (w > FlxG.width) {
-				text.scale.x = (FlxG.width / w);
-			}
+			var songText:MenuAlphabet = new MenuAlphabet(0, (70 * i) + 30, song.song, true, 0, _scale);
+			songText.letterArray.fastForEach((char, i) -> char.scale.y = 1.0);
+			songText.targetY = i;
+			songText.setTargetPos();
+			grpSongs.add(songText);
 
 			// using a FlxGroup is too much fuss!
-			icon.sprTracker = text;
+			icon.sprTracker = songText;
 			iconArray.push(icon);
 			add(icon);
 		});
@@ -109,6 +110,9 @@ class FreeplayState extends MusicBeatState
 		lerpColor = FlxColorFix.fromFlxColor(getBgColor());
 		//inputText = new SongSearch();
 		//add(inputText);
+		
+		grpSongs.members.fastForEach((song, i) -> song.setTargetPos());
+		iconArray.fastForEach((icon, i) -> icon.setSprTrackerPos());
 
 		super.create();
 	}
@@ -124,16 +128,15 @@ class FreeplayState extends MusicBeatState
 	}
 
 	public function addWeek(songs:Array<String>, ?songCharacters:Array<String>, week:String, mod:String):Void {
-		songCharacters ??= ['bf'];
-		songs.fastForEach((song, i) -> {
-			var icon = songCharacters[Std.int(FlxMath.bound(i, 0, songCharacters.length - 1))];
-			addSong(song, icon, week, i, mod);
-		});
+		songCharacters = songCharacters ?? ['bf'];
+		for (i in 0...songs.length) {
+			var songIcon:String = songCharacters[Std.int(FlxMath.bound(i, 0, songCharacters.length-1))];
+			addSong(songs[i], songIcon, week, i, mod);
+		}
 	}
 
-	inline function formatColor(weekName:String, id:Int):String {
-		return weekName + '_songID_' + id;
-	}
+	inline function formatColor(weekName:String, id:Int):String
+		return weekName + '_songID_$id';
 
 	var lerpColor:FlxColorFix;
 	var targetColor:FlxColor;
@@ -149,11 +152,8 @@ class FreeplayState extends MusicBeatState
 	override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
-
-		if (FlxG.sound.music != null) {
-			if (FlxG.sound.music.volume < 0.7)
-				FlxG.sound.music.volume += 0.5 * elapsed;
-		}
+		if (FlxG.sound.music.volume < 0.7)
+			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
 
 		lerpScore = Math.floor(CoolUtil.coolLerp(lerpScore, intendedScore, 0.4));
 		lerpColor.lerp(targetColor ?? FlxColor.WHITE, 0.045, true);
@@ -176,6 +176,7 @@ class FreeplayState extends MusicBeatState
 
 		#if desktop
 		if(FlxG.keys.justPressed.ONE) {
+			
 			final curSong = cast songs[curSelected];
 			if (curSong.song != loadedSong)
 			{
@@ -234,7 +235,6 @@ class FreeplayState extends MusicBeatState
 	function loadSong(toChart:Bool):Void {
 		var songData = songs[curSelected];
 		var diff = curWeekDiffs[curDifficulty];
-		#if mobile MobileTouch.setMode(NONE); #end
 		WeekSetup.loadSong(songData.week, songData.song, diff, false, false, #if DEV_TOOLS toChart ? ChartingState : #end null);
 	}
 

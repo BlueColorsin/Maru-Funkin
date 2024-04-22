@@ -43,17 +43,17 @@ class PauseSubState extends MusicBeatSubstate {
 		maxTime = FlxStringUtil.formatTime(Conductor.inst.length / 1000);
 		timeLeft = new FunkinText(20,15,"Time left: 0 / 0",32);
 
-		pauseItems = [levelInfo, levelDifficulty, deathCounter, timeLeft];
-		pauseItems.fastForEach((item, i) -> {
-			item.x = FlxG.width - (item.width + 20);
-			add(item);
-		});
+		for (i in pauseItems = [levelInfo,levelDifficulty,deathCounter,timeLeft]) {
+			i.x = FlxG.width - (i.width + 20);
+			add(i);
+		}
 
-		menuItems.fastForEach((item, i) -> {
-			var menuItem:MenuAlphabet = new MenuAlphabet(0, 0, item, true, i);
+		for (i in 0...menuItems.length) {
+			final menuItem:MenuAlphabet = new MenuAlphabet(0, 0, menuItems[i], true);
+			menuItem.targetY = i;
 			add(menuItem);
 			items.push(menuItem);
-		});
+		}
 	}
 
 	public function init() {

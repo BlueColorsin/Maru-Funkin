@@ -40,12 +40,12 @@ class RuntimeShader extends FlxRuntimeShader implements IUpdateable implements I
 
 	public function new(code:String) {
 		super(code);
-		Main.game.plugin.updateObjects.push(this);
+		Main.game.updateObjects.push(this);
 	}
 	
 	public function destroy() {
 		iTime = 0.0;
-		Main.game.plugin.updateObjects.remove(this);
+		Main.game.updateObjects.remove(this);
 	}
 	
 	public var updateTime:Bool = true;

@@ -22,13 +22,7 @@ class ResizableSprite extends Sprite {
     }
 }
 
-typedef TransitionData = {
-    var open:Float;
-    var close:Float;
-}
-
-class Transition extends ResizableSprite
-{
+class Transition extends ResizableSprite {
     public static var skipTransOpen:Bool = false;
     public static var skipTransClose:Bool = false;
 
@@ -37,11 +31,10 @@ class Transition extends ResizableSprite
 		skipTransClose = close ?? open;
     }
     
-    public static var times:TransitionData = {
+    public static var times = {
         open: 0.4,
         close: 0.3
     }
-
     var bitmap:Bitmap;
 
     public function new() {
@@ -52,42 +45,31 @@ class Transition extends ResizableSprite
         visible = false;
     }
     
-    public function set(?color:FlxColor, openTime:Float = 0.4, closeTime:Float = 0.3, ?asset:FlxGraphicAsset)
-    {
+    public function set(?color:FlxColor, openTime:Float = 0.4, closeTime:Float = 0.3, ?asset:FlxGraphicAsset) {
         times.open = openTime;
         times.close = closeTime;
         
-        if (asset != null)
-        {
+        if (asset != null) {
             if (asset is String) {
                 bitmap.bitmapData = AssetManager.getFileBitmap(asset, true);
             }
             else if (asset is FlxGraphic) {
-                final graphic = cast(asset, FlxGraphic);
-                bitmap.bitmapData = graphic.bitmap;
-                graphic.persist = true;
-                graphic.destroyOnNoUse = false;
+                final _graphic = cast(asset, FlxGraphic);
+                bitmap.bitmapData = _graphic.bitmap;
+                _graphic.persist = true;
+                _graphic.destroyOnNoUse = false;
             } 
             else if (asset is BitmapData) {
                 bitmap.bitmapData = asset;
             }
             updateScale();
         }
-        else
-        {
-            color ??= FlxColor.BLACK;
+        else {
+            color = color ?? FlxColor.BLACK;
             final bmp = new BitmapData(FlxG.width, FlxG.height * 2, true, color);
             for (i in 0...FlxG.height) {
                 var lineAlpha = FlxMath.remapToRange(i, 0, FlxG.height, 0, color.alpha);
-                var rect = CoolUtil.rectangle;
-                rect.setTo(0, i, FlxG.width, 1);
-                
-                bmp.fillRect(rect, FlxColor.fromRGB(
-                    color.red,
-                    color.green,
-                    color.blue,
-                    Std.int(lineAlpha)
-                ));
+                bmp.fillRect(new Rectangle(0, i, FlxG.width, 1), FlxColor.fromRGB(color.red,color.green,color.blue,Std.int(lineAlpha)));
             }
             bitmap.bitmapData = bmp;
             bitmap.scaleX = bitmap.scaleY = 1;
@@ -107,7 +89,7 @@ class Transition extends ResizableSprite
     public function startTrans(?nextState:FlxState, ?completeCallback:()->Void) {
         scaleY = -Math.abs(scaleY);
         inExit = false;
-        setupTrans(0, height, times.open, () -> {
+        setupTrans(0, height, times.open, function () {
             if (completeCallback != null) completeCallback();
             if (nextState != null) FlxG.switchState(nextState);
         }, true);
