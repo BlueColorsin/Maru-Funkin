@@ -10,32 +10,37 @@ function eventHit(event) {
 function changeStage(stageName)
 {
     var stage = cachedStages.get(stageName);
-    
+
     if (stage == null) {
-        ModdingUtil.errorPrint("Stage with name " + stageName + " not found.");  
+        ModdingUtil.errorPrint("Stage with name " + stageName + " not found.");
         return;
     }
-    
+
     State.stage.visible = false;
     State.stage.active = false;
 
     if (State.stage.script != null)
-        State.stage.script.callback("hideStage");
-    
+        State.stage.script.safeCall("hideStage");
+
     stage.visible = true;
     stage.active = true;
-    
+
     stage.applyData(State.boyfriend, State.dad, State.gf);
     repositionChar(State.boyfriend, 770, 450);
     repositionChar(State.dad, 100, 450);
     repositionChar(State.gf, 400, 360);
 
+    // update the character layers so it is not behind
+    stage.__existsAddToLayer("bf", State.boyfriendGroup);
+    stage.__existsAddToLayer("dad", State.dadGroup);
+    stage.__existsAddToLayer("gf", State.gfGroup);
+
     if (stage.script != null)
-        stage.script.callback("changeStage");
+        stage.script.safeCall("changeStage");
 
     State.defaultCamZoom = stage.data.zoom;
     State.stageData = stage.data;
-    
+
     State.stage = stage;
 }
 
@@ -65,7 +70,7 @@ function createPost() {
     cachedStages.set(PlayState.curStage, State.stage);
     var initLevel = Paths.currentLevel; // Get the stage assets folder
     var initStage = State.stage; // Needed so the script functions work correctly
-    
+
     for (event in State.notesGroup.events) {
         if (event.name == "changeStage") {
             var stage = event.values[0];
@@ -78,15 +83,10 @@ function createPost() {
             var stageObject = Stage.fromJson(stageData, stageScript);
             State.stage = stageObject;
 
-            // Setup the layers crap
-            stageObject.__existsAddToLayer("bf", State.boyfriendGroup);
-            stageObject.__existsAddToLayer("dad", State.dadGroup);
-            stageObject.__existsAddToLayer("gf", State.gfGroup);
-
             if (stageScript != null) {
                 stageScript.set("ScriptStage", stageObject);
-                stageScript.callback("create");
-                stageScript.callback("createPost");
+                stageScript.safeCall("create");
+                stageScript.safeCall("createPost");
             }
 
             cachedStages.set(stage, stageObject);
