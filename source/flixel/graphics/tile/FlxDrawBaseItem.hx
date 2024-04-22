@@ -1,5 +1,6 @@
 package flixel.graphics.tile;
 
+import openfl.display.ShaderParameter;
 import flixel.FlxCamera;
 import flixel.graphics.frames.FlxFrame;
 import flixel.math.FlxMatrix;
@@ -9,6 +10,7 @@ import openfl.geom.ColorTransform;
 /**
  * @author Zaphod
  */
+@:unreflective
 abstract class FlxDrawBaseItem<T>
 {
 	/**
@@ -72,10 +74,16 @@ abstract class FlxDrawBaseItem<T>
 	{
 		return 0;
 	}
+
+	inline function setParameterValue(parameter:ShaderParameter<Bool>, value:Bool):Void
+	{
+		if (parameter.value == null)
+			parameter.value = [];
+		parameter.value[0] = value;
+	}
 }
 
-enum abstract FlxDrawItemType(Int)
-{
-	var TILES = 0;
-	var TRIANGLES = 1;
+enum abstract FlxDrawItemType(Bool)  {
+	var TILES = false;
+	var TRIANGLES = true;
 }

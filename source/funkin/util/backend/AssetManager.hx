@@ -96,13 +96,15 @@ class Asset
 		return null;
 	}
 
-	function __disposeSound(sound:Sound):Sound @:privateAccess {
+	function __disposeSound(sound:Sound):Sound @:privateAccess
+	{
+		#if !web
 		var buffer = sound.__buffer;
-
 		if (buffer != null) {
 			buffer.data.buffer = null;
 			buffer.data = null;
 		}
+		#end
 
 		sound.close();
 
@@ -142,12 +144,22 @@ class LodGraphic extends FlxGraphic
 		imageFrame.frame.sourceSize *= lodScale;
 	}
 
-	override function set_bitmap(value:BitmapData):BitmapData {
+	public var lodWidth(default, null):Int;
+	public var lodHeight(default, null):Int;
+
+	public inline function setSize(width:Int, height:Int):Void {
+		this.width = width;
+		this.height = height;
+	}
+
+	override function set_bitmap(value:BitmapData):BitmapData
+	{
 		if (value != null)
 		{
 			bitmap = value;
-			width = bitmap.width << lodLevel;
-			height = bitmap.height << lodLevel;
+			setSize(bitmap.width, bitmap.height);
+			lodWidth = bitmap.width << lodLevel;
+			lodHeight = bitmap.height << lodLevel;
 		}
 
 		return value;
@@ -234,7 +246,7 @@ class AssetManager
 		var bitmaps:Map<String, Dynamic> = [];
 		var sounds:Map<String, Sound> = [];
 
-        final cacheImages = function (arr:Array<LoadImage>) {
+        final cacheImages = (arr:Array<LoadImage>) -> {
 			while (arr[0] != null) {
 				var asset:LoadImage = arr[0];
 				
@@ -250,7 +262,7 @@ class AssetManager
 			}
         }
 
-		final cacheSound = function (arr:Array<String>, asset:String) {
+		final cacheSound = (arr:Array<String>, asset:String) -> {
 			if (!existsAsset(asset)) if (!sounds.exists(asset)) {
 				var sound = __getFileSound(asset);
 				sounds.set(asset, sound);
@@ -258,37 +270,41 @@ class AssetManager
 			arr.remove(asset);
 		}
 
-		final cacheSounds = function (arr:Array<String>) {
+		final cacheSounds = (arr:Array<String>) -> {
 			while (arr[0] != null) {
 				var asset:String = arr[0];
 				cacheSound(arr, asset);
 			}
 		}
 
+		CoolUtil.enableGc(false);
+
 		if (stageImages.length > 0)
-			FunkThread.run(function () cacheImages(stageImages));
+			FunkThread.run(() -> cacheImages(stageImages));
 		
 		if (charImages.length > 0)
-			FunkThread.run(function () cacheImages(charImages));
+			FunkThread.run(() -> cacheImages(charImages));
 
 		if (songSounds.length > 0)
 		{
 			// Extra thread is available
 			if (charImages.length == 0 || stageImages.length == 0)
 			{
-				FunkThread.run(function () cacheSound(songSounds, songSounds[0]));
+				FunkThread.run(() -> cacheSound(songSounds, songSounds[0]));
 				if (songSounds[1] != null)
-					FunkThread.run(function () cacheSound(songSounds, songSounds[1]));
+					FunkThread.run(() -> cacheSound(songSounds, songSounds[1]));
 			}
 			else
 			{
-				FunkThread.run(function () cacheSounds(songSounds));
+				FunkThread.run(() -> cacheSounds(songSounds));
 			}
 		}
 
+		#if sys
 		while ((stageImages.length + charImages.length + songSounds.length) > 0) {
 			Sys.sleep(0.01);
 		}
+		#end
 		
 		for (key => bitmap in bitmaps) {
 			__cacheFromBitmap(key, bitmap.bitmap, false, bitmap.lod);
@@ -305,6 +321,7 @@ class AssetManager
 		sounds.clear();
 		sounds = null;
 
+		CoolUtil.enableGc(true);
 		CoolUtil.gc(true);
 
 		if (onComplete != null)
@@ -315,7 +332,7 @@ class AssetManager
 	 * GRAPHIC CACHE
 	 */
 
-	public static var gpuTextures:Bool = #if hl false; #else true; #end
+	public static var gpuTextures:Bool = #if (hl || web) false; #else true; #end
 	public static var lodQuality:LodLevel = HIGH;
 	public static function setLodQuality(level:String):LodLevel {
 		return lodQuality = LodLevel.fromString(level);
@@ -403,9 +420,8 @@ class AssetManager
 	@:noCompletion
 	static inline function __getFileBitmap(path:String):BitmapData {
 		#if desktop
-		var desktopPath = Paths.removeAssetLib(path);
-		if (!desktopPath.startsWith('assets'))
-			return BitmapData.fromFile(desktopPath);
+		if (!path.startsWith('assets'))
+			return BitmapData.fromFile(path);
 		#end
 
 		return OpenFlAssets.getBitmapData(path, true);
@@ -445,9 +461,8 @@ class AssetManager
 	@:noCompletion
 	static inline function __getFileSound(path:String):Sound {
 		#if desktop
-		var desktopPath = Paths.removeAssetLib(path);
-		if (!desktopPath.startsWith('assets'))
-			return Sound.fromFile(desktopPath);
+		if (!path.startsWith('assets'))
+			return Sound.fromFile(path);
 		#end
 
 		return getLimeAssetsSound(path);
@@ -498,7 +513,9 @@ class AssetManager
 	}
 
 	@:noCompletion
-	inline static function __clearCacheFromKeys(keys:Array<String>, clearGraphics:Bool, clearSounds:Bool):Array<String> {
+	inline static function __clearCacheFromKeys(keys:Array<String>, clearGraphics:Bool, clearSounds:Bool):Array<String>
+	{
+		#if !web // Temp slap-on fix till i figure out the problem with web disposing
 		var removeKeys:Array<String> = [];
 		
 		keys.fastForEach((key, i) -> {
@@ -516,6 +533,7 @@ class AssetManager
 		removeKeys.fastForEach((key, i) -> {
 			keys.remove(key);
 		});
+		#end
 
 		return keys;
 	}

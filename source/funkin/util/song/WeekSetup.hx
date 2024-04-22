@@ -35,7 +35,8 @@ typedef WeekData = {
     var name:String;
 }
 
-class WeekSetup {
+class WeekSetup
+{
     public static var weekList:Array<WeekData> = [];
     public static var vanillaWeekList:Array<WeekData> = [];
     public static var weekMap:Map<String, WeekData> = [];
@@ -61,7 +62,8 @@ class WeekSetup {
         hideFreeplay: false,
 	}
 
-    public static function getWeekList() {//:Array<WeekJson> {
+    public static function getWeekList():Array<WeekData>
+    {
         var weeks:Array<String> = [];
 
         // Get week json lists
@@ -102,6 +104,8 @@ class WeekSetup {
 
         for (i in weeks) {
             final getJson = CoolUtil.getFileContent(Paths.getPath('data/weeks/$i.json', TEXT, null, true));
+            if (getJson.length <= 0) continue; // dont add empty weeks
+            
             final parsedJson:WeekJson = checkWeek(Json.parse(getJson));
 
             final _data:WeekData = {
@@ -206,12 +210,12 @@ class WeekSetup {
         loadScreen.init(Stage.getJson(song.stage), song.players, song.song);
         
         // Pre-clear cache to make sure the loading screen stuff doesnt get disposed
-        loadScreen.onStart = function () {
+        loadScreen.onStart = () -> {
             PlayState.clearCache = false;
             CoolUtil.clearCache();
         }
         
-        loadScreen.onComplete = function () {
+        loadScreen.onComplete = () -> {
             Paths.currentLevel = PlayState.storyWeek;
             CoolUtil.switchState(instance, true, skipTrans);
         }        

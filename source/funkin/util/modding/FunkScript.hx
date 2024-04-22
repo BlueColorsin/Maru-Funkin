@@ -1,5 +1,7 @@
 package funkin.util.modding;
 
+import funkin.objects.NotesGroup;
+import funkin.objects.NotesGroup;
 import hscript.Script;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 
@@ -8,7 +10,8 @@ enum abstract HscriptFunctionCallback(Int) from Int to Int {
 	var STOP_FUNCTION = 1;
 }
 
-class FunkScript extends hscript.Script implements IFlxDestroyable {
+class FunkScript extends hscript.Script implements IFlxDestroyable
+{
 	public static var globalVariables:Map<String, Dynamic> = [];
 	public var active:Bool = true;
 	public var scriptID:String = '';
@@ -71,6 +74,11 @@ class FunkScript extends hscript.Script implements IFlxDestroyable {
 	public function implement():Void { //Preloaded Variables
 		implementNonStatic();
 
+		set("trace", Reflect.makeVarArgs(function(el) {
+			var v = el.shift();
+			ModdingUtil.print(Std.string(v), NONE);
+		}));
+
 		// Wip
 
 		set('STOP_FUNCTION', STOP_FUNCTION);
@@ -115,6 +123,7 @@ class FunkScript extends hscript.Script implements IFlxDestroyable {
 		set('FlxG', flixel.FlxG);
         set('FlxSpriteExt', funkin.graphics.FlxSpriteExt); // Both r the same lol, just for backwards compatibility
 		set('FlxSprite', funkin.graphics.FlxSpriteExt);
+		set('FlxBackdrop', funkin.graphics.FlxBackdropExt); // Just a lil fix for lod
 		set('FlxText', flixel.text.FlxText);
 		set('FlxTypedGroup', TypedGroup);
 		set('FlxSpriteGroup', flixel.group.FlxSpriteGroup);
@@ -128,12 +137,12 @@ class FunkScript extends hscript.Script implements IFlxDestroyable {
 		set('FlxEase', flixel.tweens.FlxEase);
 		set('FlxTrail', flixel.addons.effects.FlxTrail);
 
-		#if VIDEOS_ALLOWED
-		set('FlxVideo', hxcodec.flixel.FlxVideo);
-		set('FlxVideoSprite', hxcodec.flixel.FlxVideoSprite);
+		#if hxvlc
+		set('FlxVideo', hxvlc.flixel.FlxVideo);
+		set('FlxVideoSprite', hxvlc.flixel.FlxVideoSprite);
 		#end
 
-		#if DISCORD_ALLOWED
+		#if discord_rpc
 		set("changeDiscordPresence", DiscordClient.changePresence);
 		#end
 
@@ -146,8 +155,8 @@ class FunkScript extends hscript.Script implements IFlxDestroyable {
 			#end
 		);
 
-		set("VIDEOS_ALLOWED", #if VIDEOS_ALLOWED true #else false #end);
-		set("DISCORD_ALLOWED", #if DISCORD_ALLOWED true #else false #end);
+		set("VIDEOS_ALLOWED", #if hxvlc true #else false #end);
+		set("DISCORD_ALLOWED", #if discord_rpc true #else false #end);
 		set("ZIPS_ALLOWED", #if ZIPS_ALLOWED true #else false #end);
 
 		//HScript Functions
@@ -190,11 +199,6 @@ class FunkScript extends hscript.Script implements IFlxDestroyable {
 			return Controls.getKeyOld(key);
 		});
 		
-		set("trace", Reflect.makeVarArgs(function(el) {
-			var v = el.shift();
-			ModdingUtil.print(Std.string(v), NONE);
-		}));
-
 		set('getSound', function (key:String):FlxSound {
 			return CoolUtil.getSound(key);
 		});
@@ -320,7 +324,18 @@ class FunkScript extends hscript.Script implements IFlxDestroyable {
 			if (name == "runCode") // why would you-
 				return false;
 
-			return ModdingUtil.getCall('eventHit', [tempEvent.set(-1, name, values)]);
+			if (NotesGroup.instance != null)
+			{
+				var	curEvents = NotesGroup.instance.songEvents;
+				if (!curEvents.contains(name)) {
+					var script = ModdingUtil.addScript(Paths.script('events/$name'));
+					curEvents.push(name);
+				}
+			}
+
+			tempEvent.name = name;
+			tempEvent.values = values ?? [];
+			return ModdingUtil.getCall('eventHit', [tempEvent]);
 		});
 
 		// Script functions

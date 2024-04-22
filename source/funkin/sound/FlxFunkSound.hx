@@ -2,7 +2,6 @@ package funkin.sound;
 
 import openfl.events.Event;
 import openfl.net.URLRequest;
-import openfl.Lib;
 import openfl.media.SoundMixer;
 import lime.media.AudioSource;
 import openfl.media.SoundTransform;
@@ -59,7 +58,7 @@ class FlxFunkSound extends FlxBasic
     function set_sound(value:Sound):Sound {
         if (value != null)
         {
-            var init:()->Void = function () {
+            var init:()->Void = () -> {
                 length = value.length;
                 source.buffer = value.__buffer;
                 source.init();
@@ -74,7 +73,7 @@ class FlxFunkSound extends FlxBasic
 
             if (value.__urlLoading)
             {
-                var onLoad:Event->Void = function (e:Event) {
+                var onLoad:Event->Void = (e:Event) -> {
                     if (value == e.target)
                         init();
                 }
@@ -122,8 +121,8 @@ class FlxFunkSound extends FlxBasic
     {
         this.onLoad = onLoad;
         
-        if (!path.startsWith("./"))
-            path = './$path';
+        if(!path.startsWith("https://")) if (!path.startsWith("./"))
+            path = './' + (path.contains(':') ? path.split(':').unsafeGet(1) : path);
         
         final sound = new Sound();
         sound.load(new URLRequest(path));
@@ -148,7 +147,7 @@ class FlxFunkSound extends FlxBasic
 
     public var loops(default, set):Int = 0;
     inline function set_loops(value:Int):Int {
-        if (value < 1) loops = 1;
+        if (value < 1) value = 1;
         return loops = source.loops = value - 1;
     }
 
@@ -235,20 +234,20 @@ class FlxFunkSound extends FlxBasic
         source.position = position;
     }
 
-    var __lastLibTime:Float = 0;
+    var __lastTick:Float = 0;
     var __lastTime:Float = 0;
 
     // Quick interpolate fix until the ninjamuffin lime pr gets merged
     public function getTime():Float
     {
-        final time = source.currentTime;
+        final time:Int = source.currentTime;
 
         if (time != __lastTime) {
             __lastTime = time;
-            __lastLibTime = Lib.getTimer();
+            __lastTick = FlxG.game.ticks;
             return time;
         }
 
-        return time + Lib.getTimer() - __lastLibTime;
+        return time + FlxG.game.ticks - __lastTick;
     }
 }

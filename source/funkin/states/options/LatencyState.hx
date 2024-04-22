@@ -8,7 +8,8 @@ class LatencyState extends MusicBeatState
 
 	override function create()
 	{
-		if (FlxG.sound.music != null) FlxG.sound.music.stop();
+		if (FlxG.sound.music != null)
+			FlxG.sound.music.stop();
 
 		var bg:FunkinSprite = new FunkinSprite('options/latencyDesat');
 		bg.color = 0xff2b2b2b;
@@ -20,7 +21,7 @@ class LatencyState extends MusicBeatState
 		hitSpr.playAnim('idle');
 		add(hitSpr);
 
-		offsetText = new Alphabet(hitSpr.x + hitSpr.width / 2 + 75, hitSpr.y - hitSpr.height / 2);
+		offsetText = new Alphabet(hitSpr.x + hitSpr.width / 2 - 75, hitSpr.y - hitSpr.height / 2);
 		offsetText.alignment = CENTER;
 		add(offsetText);
 
@@ -35,7 +36,7 @@ class LatencyState extends MusicBeatState
 		FlxG.sound.playMusic(Paths.music('maruOffsets'), 1, true);
 		Conductor.bpm = 100;
 		Conductor.songPosition = 0;
-		offset = Conductor.settingOffset;
+		offset = Conductor.latency;
 		updateTxt();
 
 		super.create();
@@ -49,8 +50,8 @@ class LatencyState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		if (FlxG.keys.justPressed.ENTER) {
-			Conductor.settingOffset = offset;
-			SaveData.setSave('offset', Conductor.settingOffset);
+			Conductor.latency = offset;
+			SaveData.setSave('offset', Conductor.latency);
 			SaveData.flushData();
 			exit();
 		} else if (FlxG.keys.justPressed.ESCAPE) {

@@ -1,7 +1,14 @@
 package funkin.objects;
 
-class HealthIcon extends FlxSpriteExt {
-	public var sprTracker:FlxObject;
+class HealthIcon extends FlxSpriteExt
+{
+	public var sprTracker(default, set):FlxObject;
+	inline function set_sprTracker(value:FlxObject) {
+		sprTracker = value;
+		setSprTrackerPos();
+		return value;
+	}
+
 	public var isPlayer:Bool = false;
 	public var playIcon:Bool = false;
 	public var isDying:Bool = false;
@@ -26,7 +33,7 @@ class HealthIcon extends FlxSpriteExt {
 		else antialiasing = Preferences.getPref('antialiasing');
 
 		var icon = "face";
-		if (Paths.exists(Paths.png('icons/$char', null), IMAGE)) // Check if icon exists
+		if (Paths.exists(Paths.png('icons/$char'), IMAGE)) // Check if icon exists
 			icon = char;
 
 		loadImage('icons/$icon'); // Load first to get the resolution

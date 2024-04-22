@@ -23,11 +23,14 @@ jobs:
       - name: Install & Setup Haxe
         uses: krdlab/setup-haxe@master
         with:
-          haxe-version: 4.3.3
+          haxe-version: 4.3.4
 
       - name: Install Libraries
         run: |
           haxe -cp ./actions -D analyzer-optimize -main Main --interp
+          haxelib git hxcpp https://github.com/HaxeFoundation/hxcpp.git --quiet
+          haxelib run lime rebuild hxcpp
+          haxelib set hxcpp git
 
       - name: Build
         run: haxelib run lime build windows -D analyzer-optimize
@@ -51,11 +54,17 @@ jobs:
       - name: Install & Setup Haxe
         uses: krdlab/setup-haxe@master
         with:
-          haxe-version: 4.3.3
+          haxe-version: 4.3.4
+
+      - name: Installing Dependencies
+        run: sudo apt-get update && sudo apt-get upgrade && sudo apt-get install libvlc-dev libvlccore-dev vlc-bin vlc
 
       - name: Install Libraries
         run: |
           haxe -cp ./actions -D analyzer-optimize -main Main --interp
+          haxelib git hxcpp https://github.com/HaxeFoundation/hxcpp.git --quiet
+          haxelib run lime rebuild hxcpp
+          haxelib set hxcpp git
 
       - name: Build
         run: haxelib run lime build linux -D analyzer-optimize
@@ -79,7 +88,7 @@ jobs:
       - name: Install & Setup Haxe
         uses: krdlab/setup-haxe@master
         with:
-          haxe-version: 4.3.3
+          haxe-version: 4.3.4
 
       - name: Setup Android NDK
         id: setup-ndk
@@ -96,6 +105,9 @@ jobs:
       - name: Install Libraries
         run: |
           haxe -cp ./actions -D analyzer-optimize -main Main --interp
+          haxelib git hxcpp https://github.com/HaxeFoundation/hxcpp.git --quiet
+          haxelib run lime rebuild hxcpp
+          haxelib set hxcpp git
       
       - name: Configure Android
         run: |

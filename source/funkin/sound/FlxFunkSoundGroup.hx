@@ -2,6 +2,7 @@ package funkin.sound;
 
 import openfl.events.Event;
 
+@:access(funkin.sound.FlxFunkSound)
 class FlxFunkSoundGroup<T:FlxFunkSound> extends FlxBasic
 {
     public static var group:FlxFunkSoundGroup<FlxFunkSound>;
@@ -11,20 +12,20 @@ class FlxFunkSoundGroup<T:FlxFunkSound> extends FlxBasic
     public function new() {
         super();
 
-        @:privateAccess // Window lose focus, pause sounds
-        FlxG.stage.addEventListener(Event.DEACTIVATE, function (e) {
+        // Window lose focus, pause sounds
+        FlxG.stage.addEventListener(Event.DEACTIVATE, (e) -> {
             sounds.fastForEach((sound, i) -> {
-                if (sound.playing) {
+                if (sound != null) if (sound.playing) {
                     sound.__gainFocus = true;
                     sound.pause();
                 }
             });
         });
 
-        @:privateAccess // Window gain focus, resume sounds
-        FlxG.stage.addEventListener(Event.ACTIVATE, function (e) {
+        // Window gain focus, resume sounds
+        FlxG.stage.addEventListener(Event.ACTIVATE, (e) -> {
             sounds.fastForEach((sound, i) -> {
-                if (sound.__gainFocus) {
+                if (sound != null) if (sound.__gainFocus) {
                     sound.resume();
                     sound.__gainFocus = false;
                 }
@@ -41,7 +42,7 @@ class FlxFunkSoundGroup<T:FlxFunkSound> extends FlxBasic
     }
 
     // Resumes all sounds set with pausable 
-    public function resume():Void @:privateAccess
+    public function resume():Void
     {
         sounds.fastForEach((sound, i) -> {
             if (sound != null) if (sound.__resume) {
@@ -52,7 +53,7 @@ class FlxFunkSoundGroup<T:FlxFunkSound> extends FlxBasic
     }
 
     // Pauses all sounds set with pausable 
-    public function pause():Void @:privateAccess
+    public function pause():Void
     {
         sounds.fastForEach((sound, i) -> {
             if (sound != null) if (sound.pausable) if (sound.playing) {
@@ -68,7 +69,7 @@ class FlxFunkSoundGroup<T:FlxFunkSound> extends FlxBasic
         var index = sounds.indexOf(sound);
         if (index != -1)
         {
-            splice ? sounds.splice(index, 1) : sounds[index] = null;
+            splice ? sounds.splice(index, 1) : sounds.unsafeSet(index, null);
         }
     }
 
@@ -84,7 +85,7 @@ class FlxFunkSoundGroup<T:FlxFunkSound> extends FlxBasic
         // Get the first null index of the group
         var nullIndex = sounds.indexOf(null);
         if (nullIndex != -1) {
-            sounds[nullIndex] = sound;
+            sounds.unsafeSet(nullIndex, sound);
             return sound;
         }
 
@@ -99,7 +100,7 @@ class FlxFunkSoundGroup<T:FlxFunkSound> extends FlxBasic
         sounds.fastForEach((sound, i) -> {
             if (sound != null) if (!sound.persist) {
                 sound.destroy();
-                sounds[i] = null;
+                sounds.unsafeSet(i, null);
             }
         });
     }

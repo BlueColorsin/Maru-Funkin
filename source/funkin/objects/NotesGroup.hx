@@ -1,5 +1,6 @@
 package funkin.objects;
 
+import haxe.ds.Vector;
 import flixel.util.FlxSignal;
 import funkin.objects.note.Sustain;
 import funkin.objects.note.BasicNote;
@@ -7,9 +8,11 @@ import funkin.objects.note.StrumLineGroup;
 
 class NotesGroup extends Group
 {	
-	public static var instance:NotesGroup = null;
+	public static var instance:NotesGroup;
     public var SONG:SwagSong;
-	var game:PlayState = null;
+	public var game:PlayState;
+	public var boyfriend:Character;
+	public var dad:Character;
 
     public static var songSpeed:Float = 1.0;
     public var curSong:String = 'test';
@@ -43,12 +46,12 @@ class NotesGroup extends Group
 	public var isPlayState:Bool = true;
 
 	public function set_inBotplay(value:Bool) {
-		if (isPlayState) game.boyfriend.botMode = value;
+		if (boyfriend != null) boyfriend.botMode = value;
 		return inBotplay = value;
 	}
 
 	public function set_dadBotplay(value:Bool) {
-		if (isPlayState) game.dad.botMode = value;
+		if (dad != null) dad.botMode = value;
 		return dadBotplay = value;
 	}
 
@@ -56,11 +59,12 @@ class NotesGroup extends Group
 		grpNoteSplashes.spawnSplash(note);
 	}
 
-	inline function hitNote(note:Note, ?character:Character, botplayCheck:Bool = false, prefBot:Bool = false) {
+	inline function hitNote(note:Note, character:Character, botplayCheck:Bool = false, prefBot:Bool = false) {
 		note.wasGoodHit = true;
-		if (note.child != null) note.child.startedPress = true;
+		if (note.child != null)
+			note.child.startedPress = true;
 
-		if (isPlayState) {
+		if (character != null) {
 			character.sing(note.noteData, note.altAnim);
 			Conductor.vocals.volume = 1;
 		}
@@ -76,11 +80,11 @@ class NotesGroup extends Group
 		note.targetStrum.playStrumAnim('confirm', true);
 	}
 
-	function pressSustain(sustain:Sustain, ?character:Character, botplayCheck:Bool = false, prefBot:Bool = false) {
+	function pressSustain(sustain:Sustain, character:Character, botplayCheck:Bool = false, prefBot:Bool = false) {
 		if (!sustain.exists)
 			return;
 		
-		if (isPlayState) {
+		if (character != null) {
 			character.sing(sustain.noteData, sustain.altAnim, false);
 			Conductor.vocals.volume = 1;
 		}
@@ -104,58 +108,62 @@ class NotesGroup extends Group
 		this.isPlayState = isPlayState;
         SONG = Song.checkSong(_SONG, null, false); //Double check null values
 		curSong = SONG.song;
+
+		if (isPlayState) {
+			boyfriend = game.boyfriend;
+			dad = game.dad;
+		}
         
 		Conductor.mapBPMChanges(SONG);
 		Conductor.bpm = SONG.bpm;
-		Conductor.songOffset = SONG.offsets;
-		Conductor.loadMusic(curSong);
+		Conductor.offset = Vector.fromArrayCopy(SONG.offsets);
+		Conductor.loadSong(curSong);
 		
 		songSpeed = getPref('use-const-speed') && isPlayState ? getPref('const-speed') : SONG.speed;
         inBotplay = getPref('botplay') && isPlayState;
 		vanillaUI = getPref('vanilla-ui');
 
-		goodNoteHit = new FlxTypedSignal<(Note)->Void>();
-		goodSustainPress = new FlxTypedSignal<(Sustain)->Void>();
+		goodNoteHit = new FlxTypedSignal<Note->Void>();
+		goodSustainPress = new FlxTypedSignal<Sustain->Void>();
 		
-		noteMiss = new FlxTypedSignal<(BasicNote)->Void>();
-		badNoteHit = new FlxTypedSignal<(Int)->Void>();
+		noteMiss = new FlxTypedSignal<BasicNote->Void>();
+		badNoteHit = new FlxTypedSignal<Int->Void>();
 		
-		opponentNoteHit = new FlxTypedSignal<(Note)->Void>();
-		opponentSustainPress = new FlxTypedSignal<(Sustain)->Void>();
+		opponentNoteHit = new FlxTypedSignal<Note->Void>();
+		opponentSustainPress = new FlxTypedSignal<Sustain->Void>();
 		
 		// Setup functions
-		goodNoteHit.add(function (note:Note) {
+		goodNoteHit.add((note:Note) -> {
 			if (note.wasGoodHit) return;
-			hitNote(note, isPlayState ? game.boyfriend : null, inBotplay, getPref("botplay"));
+			hitNote(note, boyfriend, inBotplay, getPref("botplay"));
 			ModdingUtil.addCall('goodNoteHit', [note]);
 			ModdingUtil.addCall('noteHit', [note, true]);
 			note.removeNote();
 		});
 
-		goodSustainPress.add(function (sustain:Sustain) {
-			pressSustain(sustain, isPlayState ? game.boyfriend : null, inBotplay, getPref("botplay"));
+		goodSustainPress.add((sustain:Sustain) -> {
+			pressSustain(sustain, boyfriend, inBotplay, getPref("botplay"));
 			ModdingUtil.addCall('goodSustainPress', [sustain]);
 			ModdingUtil.addCall('sustainPress', [sustain, true]);
 		});
 
-		opponentNoteHit.add(function (note:Note) {
+		opponentNoteHit.add((note:Note) -> {
 			if (note.wasGoodHit) return;
-			hitNote(note, isPlayState ? game.dad : null, dadBotplay);
+			hitNote(note, dad, dadBotplay);
 			ModdingUtil.addCall('opponentNoteHit', [note]);
 			ModdingUtil.addCall('noteHit', [note, false]);
 			note.removeNote();
 		});
 
-		opponentSustainPress.add(function (sustain:Sustain) {
-			pressSustain(sustain, isPlayState ? game.dad : null, dadBotplay);
+		opponentSustainPress.add((sustain:Sustain) -> {
+			pressSustain(sustain, dad, dadBotplay);
 			ModdingUtil.addCall('opponentSustainPress', [sustain]);
 			ModdingUtil.addCall('sustainPress', [sustain, false]);
 		});
 
 		if (!isPlayState) return;
 
-		noteMiss.add(function(note:BasicNote):Void 
-		{
+		noteMiss.add((note:BasicNote) -> {
 			if (game.combo > 4) game.gf.playAnim('sad');
 			game.combo = 0;
 				
@@ -176,23 +184,22 @@ class NotesGroup extends Group
 					
 			ModdingUtil.addCall('noteMiss', [note]);
 
-			var char:Character = note.mustPress ? game.boyfriend : game.dad;
-			char.sing(note.noteData, 'miss');
+			(note.mustPress ? boyfriend : game.dad).sing(note.noteData, "miss");
 			
 			game.updateScore();
 		});
 
-		badNoteHit.add(function (data:Int) {
+		badNoteHit.add((data:Int) -> {
 			game.health -= 0.04;
 			game.songScore -= 10;
 			FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
 			ModdingUtil.addCall('badNoteHit', [data]);
 
 			if (!inBotplay)
-				game.boyfriend.sing(data, 'miss');
+				boyfriend.sing(data, 'miss');
 
 			if (!dadBotplay)
-				game.dad.sing(data, 'miss');
+				dad.sing(data, 'miss');
 
 			game.updateScore();
 		});
@@ -288,8 +295,8 @@ class NotesGroup extends Group
 
 		scrollSpeed = songSpeed;
 
-		unspawnNotes.sort(CoolUtil.sortByStrumTime);
-		events.sort(CoolUtil.sortByStrumTime);
+		unspawnNotes.sort((a:BasicNote, b:BasicNote) -> return FlxSort.byValues(FlxSort.ASCENDING, a.strumTime, b.strumTime));
+		events.sort((a:Event, b:Event) -> return FlxSort.byValues(FlxSort.ASCENDING, a.strumTime, b.strumTime));
 
 		curSpawnNote = unspawnNotes[0];
 		curCheckEvent = events[0];
@@ -332,14 +339,14 @@ class NotesGroup extends Group
 		return scrollSpeed = value;
 	}
 
-    public var goodNoteHit:FlxTypedSignal<(Note)->Void>;
-    public var goodSustainPress:FlxTypedSignal<(Sustain)->Void>;
+    public var goodNoteHit:FlxTypedSignal<Note->Void>;
+    public var goodSustainPress:FlxTypedSignal<Sustain->Void>;
     
-	public var noteMiss:FlxTypedSignal<(BasicNote)->Void>;
-    public var badNoteHit:FlxTypedSignal<(Int)->Void>;
+	public var noteMiss:FlxTypedSignal<BasicNote->Void>;
+    public var badNoteHit:FlxTypedSignal<Int->Void>;
     
-    public var opponentNoteHit:FlxTypedSignal<(Note)->Void>;
-    public var opponentSustainPress:FlxTypedSignal<(Sustain)->Void>;
+    public var opponentNoteHit:FlxTypedSignal<Note->Void>;
+    public var opponentSustainPress:FlxTypedSignal<Sustain->Void>;
 
     //Makes the conductor song go vroom vroom
     inline function updateConductor(elapsed:Float)
@@ -414,7 +421,7 @@ class NotesGroup extends Group
 	}
 
 	public inline function checkCpuNote(note:BasicNote):Void {
-		if (isCpuNote(note)) if (note.mustHit) if (Conductor.songPosition >= note.strumTime) {
+		if (note.mustHit) if (isCpuNote(note)) if (Conductor.songPosition >= note.strumTime) {
 			if (note.isSustainNote) {
 				final sus:Sustain = note.toSustain();
 				sus.pressSustain();
@@ -431,7 +438,7 @@ class NotesGroup extends Group
 
 	public inline function checkMissNote(note:BasicNote):Void {
 		if (!note.activeNote) if (!note.isSustainNote) {
-			if (!isCpuNote(note)) if (note.mustHit)
+			if (note.mustHit) if (!isCpuNote(note))
 				noteMiss.dispatch(note);
 	
 			note.removeNote();
@@ -484,18 +491,18 @@ class NotesGroup extends Group
 
     private function controls():Void
 	{
-		controlArray.splice(0, controlArray.length);
+		controlArray.clear();
 		pushControls(playerStrums, inBotplay);
 		pushControls(opponentStrums, dadBotplay);
 
 		if (generatedMusic)
 		{
 			final hasControl:Bool = controlArray.contains(true);
-			if (possibleNotes.length > 0) possibleNotes.splice(0, possibleNotes.length);
-			if (removeList.length > 0) removeList.splice(0, removeList.length);
-			if (ignoreList.length > 0) ignoreList.splice(0, ignoreList.length);
+			if (possibleNotes.length > 0) possibleNotes.clear();
+			if (removeList.length > 0) removeList.clear();
+			if (ignoreList.length > 0) ignoreList.clear();
 
-			notes.forEachAlive(function (note:BasicNote) {
+			notes.forEachAlive((note:BasicNote) -> {
 				if (isCpuNote(note))
 					return;
 
@@ -589,14 +596,14 @@ class NotesGroup extends Group
 
 	inline function checkStrums(array:Array<NoteStrum>):Void {
 		array.fastForEach((strum, i) -> {
-			final anim = strum.animation.curAnim;
-			if (anim == null) continue; // Lil null check
-			
-			if (strum.getControl(JUST_PRESSED)) if (!anim.name.startsWith('confirm'))
-				strum.playStrumAnim('pressed');
-			
-			if (!strum.getControl())
-				strum.playStrumAnim('static');
+			if (strum.animation.curAnim != null) // Lil null check
+			{
+				if (strum.getControl(JUST_PRESSED)) if (!strum.animation.curAnim.name.startsWith('confirm'))
+					strum.playStrumAnim('pressed');
+				
+				if (!strum.getControl())
+					strum.playStrumAnim('static');
+			}
 		});
 	}
 
@@ -604,18 +611,17 @@ class NotesGroup extends Group
 		if (!inBotplay) checkStrums(playerStrums.members);
 		if (!dadBotplay) checkStrums(opponentStrums.members);
 
-		// Check for sing animations in PlayState characters
-        if (isPlayState) {
-			if (!inBotplay) checkOverSinging(game.boyfriend, playerStrums);
-			if (!dadBotplay) checkOverSinging(game.dad, opponentStrums);
-		}
+		// Check for sing animations in characters
+		if (!inBotplay) checkOverSinging(boyfriend, playerStrums);
+		if (!dadBotplay) checkOverSinging(dad, opponentStrums);
 	}
 
-	function checkOverSinging(char:Character, strums:StrumLineGroup):Void {
-		var anim = char.animation.curAnim;
-		if (anim == null) return;
-		var name:String = anim.name;
+	function checkOverSinging(char:Character, strums:StrumLineGroup):Void
+	{
+		if (char == null) return;
+		if (char.animation.curAnim == null) return;
 		
+		var name:String = char.animation.curAnim.name;
 		var overSinging:Bool =
 		(char.holdTimer > (Conductor.stepCrochetMills * Conductor.STEPS_PER_BEAT)
 		&& name.startsWith('sing')

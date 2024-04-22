@@ -50,7 +50,7 @@ class StoryMenuState extends MusicBeatState {
 		grpWeekCharacters = new TypedGroup<MenuCharacter>();
 		
 		// Updating Discord Rich Presence
-		#if DISCORD_ALLOWED DiscordClient.changePresence("In the Menus", null); #end
+		#if discord_rpc DiscordClient.changePresence("In the Menus", null); #end
 		#if mobile MobileTouch.setMode(MENU); #end
 
 		WeekSetup.getWeekList().fastForEach((week, i) -> {
@@ -214,8 +214,10 @@ class StoryMenuState extends MusicBeatState {
 				rightArrow.playAnim(getKey('UI_RIGHT', PRESSED) ? 'press' : 'idle');
 				leftArrow.playAnim(getKey('UI_LEFT', PRESSED) ? 'press' : 'idle');
 
-				if (getKey('UI_RIGHT', JUST_PRESSED))	changeDifficulty(1);
-				if (getKey('UI_LEFT', JUST_PRESSED))	changeDifficulty(-1);
+				if (difficultySelectors.visible) {
+					if (getKey('UI_RIGHT', JUST_PRESSED))	changeDifficulty(1);
+					if (getKey('UI_LEFT', JUST_PRESSED))	changeDifficulty(-1);
+				}
 			}
 
 			if (getKey('ACCEPT', JUST_PRESSED)) {
@@ -257,6 +259,7 @@ class StoryMenuState extends MusicBeatState {
 			CoolUtil.playSound('confirmMenu');
 			grpWeekText.members[curWeek].startFlashing();
 			grpWeekCharacters.members[1].playAnim('confirm', true);
+			#if mobile MobileTouch.setMode(NONE); #end
 
 			var playlist = getCurData().songList.songs;
 			var diff = curWeekDiffs[curDifficulty];

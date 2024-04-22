@@ -21,7 +21,7 @@ class InitState extends FlxState
         Conductor.init();
 		CoolUtil.init();
 		Highscore.load();
-		#if DISCORD_ALLOWED
+		#if discord_rpc
 		DiscordClient.initialize();
 		lime.app.Application.current.onExit.add((code:Int) -> DiscordClient.shutdown());
         #end
@@ -83,7 +83,6 @@ class Main extends Sprite
 
 	private function init(?E:Event):Void
 	{
-		#if web throw("no."); #end
 		if (hasEventListener(Event.ADDED_TO_STAGE))
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 

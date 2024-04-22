@@ -1,6 +1,7 @@
 package funkin.objects.note;
 
-class Note extends BasicNote {
+class Note extends BasicNote
+{
     public function new(noteData:Int = 0, strumTime:Float = 0.0, skin:String = "default", ?child:Sustain) {
         super(noteData, strumTime, skin); // Load skin
         this.child = child;
@@ -9,8 +10,12 @@ class Note extends BasicNote {
 
     override function updateSprites() {
         super.updateSprites();
-        playAnim('scroll' + CoolUtil.directionArray[noteData]);
+        updateAnim();
     }
+
+	public function updateAnim() {
+		playAnim('scroll' + CoolUtil.directionArray[noteData]);
+	}
 
     override function applyCurOffset(forced:Bool = false) {
         if (animation.curAnim != null) {

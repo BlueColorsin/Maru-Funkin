@@ -39,13 +39,13 @@
 	<define name="MODS_ALLOWED" if="desktop"/>
 
 	<!--Enables tools for modding (like the console, editors, etc)-->
-	<define name="DEV_TOOLS" if="MODS_ALLOWED"/>
+	<define name="DEV_TOOLS" if="desktop"/>
 
-	<!--If you want hxcodec videos to be used-->
-	<define name="VIDEOS_ALLOWED" unless="linux || mobile" if="cpp"/>
+	<!--If you want hxvlc videos to be used-->
+	<define name="VIDEOS_ALLOWED"/>
 
 	<!--If you want the discord rcp to be used-->
-	<define name="DISCORD_ALLOWED" if="cpp" unless="mobile"/>
+	<define name="DISCORD_ALLOWED" if="desktop"/>
 	
 	<!--If you want to have ffmpeg used for osu and quaver pack zip support-->
 	<define name="ZIPS_ALLOWED" if="desktop"/>
@@ -59,60 +59,41 @@
 	<!--If to enable custom classes support in Hscript-->
 	<define name="CUSTOM_CLASSES" />
 
-	<!--Web stuff, ill remove later probably-->
-	<define name="PRELOAD_ALL" unless="web" />
-	<define name="NO_PRELOAD_ALL" if="web"/>
-
 	<!-- _____________________________ Path Settings ____________________________ -->
 
+	<classpath name="source" />
 	<set name="BUILD_DIR" value="export/debug" if="debug" />
 	<set name="BUILD_DIR" value="export/release" unless="debug" />
 	<set name="BUILD_DIR" value="export/32bit" if="32bit" />
 
-	<classpath name="source" />
-
-	<assets path="assets/preload" rename="assets" exclude="*.ogg" if="web"/>
-	<assets path="assets/preload" rename="assets" exclude="*.mp3" unless="web"/>
-	
-	<section if="PRELOAD_ALL">
-		<library name="songs"    preload="true" />
-		<library name="shared"   preload="true" />
-		<library name="weeks"    preload="true" />
-	</section>
-	
-	<section if="NO_PRELOAD_ALL">
-		<library name="songs"    preload="false" />
-		<library name="shared"   preload="false" />
-		<library name="weeks"    preload="false" />
-	</section>
-	
-	<assets path="assets/songs"    library="songs"    exclude="*.ogg" if="web"/>
-	<assets path="assets/songs"    library="songs"    exclude="*.mp3" unless="web"/>
-	<assets path="assets/shared"   library="shared"   exclude="*.ogg" if="web"/>
-	<assets path="assets/shared"   library="shared"   exclude="*.mp3" unless="web"/>
-	<assets path="assets/weeks"    library="weeks"    exclude="*.ogg" if="web"/>
-	<assets path="assets/weeks"    library="weeks"    exclude="*.mp3" unless="web"/>
-
+	<assets path="assets/preload" rename="assets"/>
+	<assets path="assets/songs"/>
+	<assets path="assets/shared"/>
+	<assets path="assets/weeks"/>
 	<assets path="assets/fonts"/>
 	<assets path="assets/videos"/>
 	
-	<assets path='example_mods' rename='mods' embed='false' unless="web"/>
-	<assets path='art/readme.txt' rename='do NOT readme.txt' />
-	<assets path='art/preloaderArt.png' rename='assets/images/preloaderArt.png' unless="web"/>
+	<assets path='example_mods' rename='mods' embed='false' if="MODS_ALLOWED"/>
+	<assets path='art/readme.txt' rename='do NOT readme.txt' if="desktop" />
+	<assets path='art/preloaderArt.png' rename='assets/images/preloaderArt.png' if="desktop"/>
 	<assets path='art/ffmpeg.exe' rename='assets/data/ffmpeg.exe' if="ZIPS_ALLOWED"/>
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
+	<haxedev set='webgl' if="web" />
+
 	<haxelib name="flixel" />
-	<haxedev set='webgl' />
 	<haxelib name="flixel-ui" />
 	<haxelib name="flixel-addons" />
 	<haxelib name="haxeui-core" unless="mac"/>
 	<haxelib name="haxeui-openfl" unless="mac"/>
-	<haxelib name="discord_rpc" if="DISCORD_ALLOWED"/>
 	<haxelib name="maru-hscript" />
-	<haxelib name="hxCodec" if="VIDEOS_ALLOWED"/>
 	<haxedef name="hscriptPos"/>
+
+	<section if="cpp">
+		<haxelib name="hxvlc" if="VIDEOS_ALLOWED"/>
+		<haxelib name="discord_rpc" if="DISCORD_ALLOWED"/>
+	</section>
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
@@ -122,6 +103,7 @@
 
 	<!-- _________________________________ Mobile _______________________________ -->
 	<section if="mobile">
+		<architecture exclude="armv7" if="android" />
 		<assets path="art/mobile" rename="assets/images/mobile"/>
 	</section>
 
